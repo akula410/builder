@@ -6,7 +6,7 @@ import(
 )
 
 type query struct {
-	builder.
+	builder.Query
 }
 
 func init(){
@@ -14,7 +14,7 @@ func init(){
 		return MySql.Connect()
 	}
 
-	builderQuery.ConnClose = func(){
+	builder.ConnClose = func(){
 		MySql.Close()
 	}
 }

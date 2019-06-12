@@ -1,7 +1,7 @@
 package main
 
 import (
-	"builderQuery/example/db"
+	"builder/example/db"
 	"fmt"
 )
 
