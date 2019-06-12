@@ -29,6 +29,7 @@ func main(){
 			Select("*").
 			From(db.BuilderQuery().Alias("a").Select("*").From("test_data").WhereIn("data_id", fields).Build()).
 			JoinInner("test_data as t", "t.data_id = a.data_id").
+			Where("a.data_id", "212").
 			Rows()
 
 	fmt.Println(data)
