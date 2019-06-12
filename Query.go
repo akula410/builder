@@ -151,7 +151,7 @@ func (c *Query) Build() string{
 				SelectSlice = append(SelectSlice, fmt.Sprintf("%v", c.mysqlRealEscapeString(value)))
 
 			case FROM:
-				FromSlice = append(FromSlice, fmt.Sprintf("%v", c.mysqlRealEscapeString(value)))
+				FromSlice = append(FromSlice, fmt.Sprintf("%v", value))
 
 			case FIELD:
 				var field string
