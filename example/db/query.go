@@ -2,15 +2,15 @@ package db
 
 import(
 	"database/sql"
-	"github.com/akula410/builderQuery"
+	"github.com/akula410/builder"
 )
 
 type query struct {
-	builderQuery.Query
+	builder.query
 }
 
 func init(){
-	builderQuery.Conn =  func() *sql.DB{
+	builder.Conn =  func() *sql.DB{
 		return MySql.Connect()
 	}
 

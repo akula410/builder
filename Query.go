@@ -1,4 +1,4 @@
-package builderQuery
+package query
 
 import (
 	"database/sql"
