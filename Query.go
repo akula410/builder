@@ -232,9 +232,7 @@ func (c *Query) Build() string{
 		sqlRequest += fmt.Sprintf("%s SET %s", UpdateSlice, strings.Join(UpdateParamsSlice, ", "))
 	}
 
-	if len(FromSlice)>0 && len(c.alias)>0 {
-		sqlRequest += fmt.Sprintf("FROM (%s) as %s ", strings.Join(FromSlice, ", "), c.alias)
-	}else if  len(FromSlice)>0 && len(c.alias)==0 {
+	if len(FromSlice)>0 {
 		sqlRequest += fmt.Sprintf("FROM %s ", strings.Join(FromSlice, ", "))
 	}
 
@@ -245,6 +243,10 @@ func (c *Query) Build() string{
 	if len(WhereSlice)>0 {
 
 		sqlRequest += fmt.Sprintf(" WHERE %s", strings.Join(c.mdfWhere(WhereSlice), " "))
+	}
+
+	if len(c.alias)>0 {
+		sqlRequest = fmt.Sprintf("(%s) AS %s", sqlRequest, c.alias)
 	}
 
 	return sqlRequest
