@@ -6,7 +6,7 @@ import(
 )
 
 type query struct {
-	builder.query
+	builder.
 }
 
 func init(){

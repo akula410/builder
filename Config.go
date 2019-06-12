@@ -1,4 +1,4 @@
-package query
+package builder
 
 const SELECT = 1
 const FROM = 2
