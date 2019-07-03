@@ -20,3 +20,7 @@ const UPDATE = 17
 const UPDATE_SET = 18
 const INCR = 19
 const DECR = 20
+
+const CHARSET_UTF8 = "utf8"
+
+const COLLATE_UTF8_GENERAL_CI = "utf8_general_ci"

@@ -14,6 +14,25 @@ type Query struct {
 	dataForBuilding []map[int]interface{}
 }
 
+func (c *Query) CreateDatabase(name string, charset string, collation string, notExists bool) sql.Result{
+	var textSql string
+	if notExists == true {
+		textSql = fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %s CHARACTER SET %s COLLATE %s", name, charset, collation)
+	}else{
+		textSql = fmt.Sprintf("CREATE DATABASE %s CHARACTER SET %s COLLATE %s", name, charset, collation)
+	}
+	return c.Exec(textSql)
+}
+
+func (c *Query) Exec(textSql string) sql.Result{
+	res, err := Conn().Exec(textSql)
+	if err != nil {
+		panic(err.Error())
+	}
+	return res
+}
+
+
 func (c *Query) Alias(alias string) *Query{
 	c.alias = alias
 	return c
