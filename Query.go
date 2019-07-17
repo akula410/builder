@@ -164,15 +164,6 @@ func (c *Query) AddColumn(columns ...*Schema) *Query{
 	return c
 }
 
-func (c *Query)GetInit() bool{
-	return false
-}
-
-
-
-
-
-
 
 func (c *Query) returnColumn() string {
 

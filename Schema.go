@@ -3,7 +3,7 @@ package builder
 import "fmt"
 
 type Schema struct {
-
+	init bool
 }
 
 
@@ -107,12 +107,13 @@ func (c *Schema)returnColumn()string{
 }
 
 func (c *Schema)GetInit() bool{
-	return true
+	return c.init
 }
 
 func (c *Schema)Transform() *Schema{
 	if c.GetInit()==false {
 		data := &Schema{}
+		data.init = true
 		return data
 	}else{
 		return c
