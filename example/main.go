@@ -33,4 +33,6 @@ func main(){
 			Rows()
 
 	fmt.Println(data)
+
+	query.AddColumn(query.ColumnInt(11))
 }
