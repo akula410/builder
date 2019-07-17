@@ -21,6 +21,16 @@ const UPDATE_SET = 18
 const INCR = 19
 const DECR = 20
 
+const PRIMARYKEY = 21
+const COLUMNSTRING = 22
+const COLUMNINT = 23
+const COLUMNTINYINT = 24
+const COLUMNTEXT = 25
+const COLUMNDATE = 26
+const COLUMNTIMESTAMP = 27
+
+
 const CHARSET_UTF8 = "utf8"
 
 const COLLATE_UTF8_GENERAL_CI = "utf8_general_ci"
+

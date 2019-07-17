@@ -10,9 +10,12 @@ var Conn func()*sql.DB
 var ConnClose func()
 
 type Query struct {
+	Schema
+
 	alias string
 	dataForBuilding []map[int]interface{}
 }
+
 
 func (c *Query) CreateDatabase(name string, charset string, collation string, notExists bool) sql.Result{
 	var textSql string
@@ -149,6 +152,31 @@ func (c *Query) Decr(data ...interface{}) *Query{
 	}
 
 	return c
+}
+
+func (c *Query) AddColumn(columns ...AddColumn) *Query{
+	sqlColumn := make([]string, 0, len(columns))
+	for _, r := range columns {
+		sqlColumn = append(sqlColumn, r.returnColumn())
+	}
+
+
+	return c
+}
+
+func (c *Query)GetInit() bool{
+	return false
+}
+
+
+
+
+
+
+
+func (c *Query) returnColumn() string {
+
+	return ""
 }
 
 
