@@ -34,5 +34,8 @@ func main(){
 
 	fmt.Println(data)
 
-	query.AddColumn(query.ColumnInt(11).ColumnBigInt(11))
+	query.AddColumn(
+		query.ColumnBigPk(11).ColumnBigInt(11),
+		query.ColumnBigPk(12).ColumnBigInt(11),
+		)
 }

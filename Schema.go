@@ -1,5 +1,7 @@
 package builder
 
+import "fmt"
+
 type Schema struct {
 
 }
@@ -8,12 +10,14 @@ type Schema struct {
 
 func (c *Schema)ColumnBigInt(length int)*Schema{
 	data := c.Transform()
-
+	fmt.Println(data)
+	fmt.Println(data.GetInit())
 	return data
 }
 func (c *Schema)ColumnBigPk(length int)*Schema{
 	data := c.Transform()
-
+	fmt.Println(data)
+	fmt.Println(data.GetInit())
 	return data
 }
 func (c *Schema)ColumnBinary(length int)*Schema{
