@@ -98,7 +98,7 @@ func (c *Schema)ColumnTinyint(length int)*Schema{
 	return data
 }
 
-func (c *Schema)ReturnColumn(length int)string{
+func (c *Schema)returnColumn()string{
 
 	return ""
 }
