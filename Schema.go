@@ -161,6 +161,7 @@ func (c *Schema)Transform() *Schema{
 	if c.GetInit()==false {
 		data := &Schema{}
 		data.init = true
+		data.column = make(map[string]interface{})
 		return data
 	}else{
 		return c
