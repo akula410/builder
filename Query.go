@@ -154,7 +154,7 @@ func (c *Query) Decr(data ...interface{}) *Query{
 	return c
 }
 
-func (c *Query) AddColumn(columns ...Schema) *Query{
+func (c *Query) AddColumn(columns ...*Schema) *Query{
 	sqlColumn := make([]string, 0, len(columns))
 	for _, r := range columns {
 		sqlColumn = append(sqlColumn, r.returnColumn())
