@@ -42,95 +42,95 @@ func (c *Query) Alias(alias string) *Query{
 }
 
 func (c *Query) Select(fields string) *Query{
-	c.dataForBuilding = append(c.dataForBuilding, c.trf(SELECT, fields))
+	c.dataForBuilding = append(c.dataForBuilding, c.trf(Select, fields))
 	return c
 }
 
 func (c *Query) From(table string) *Query{
-	c.dataForBuilding = append(c.dataForBuilding, c.trf(FROM, table))
+	c.dataForBuilding = append(c.dataForBuilding, c.trf(From, table))
 	return c
 }
 
 func (c *Query) Where(field string, value interface{}) *Query{
-	c.dataForBuilding = append(c.dataForBuilding, c.trf(FIELD, field))
+	c.dataForBuilding = append(c.dataForBuilding, c.trf(Field, field))
 	c.dataForBuilding = append(c.dataForBuilding, c.trf(AND, value))
 	return c
 }
 
 func (c *Query) WhereOr(field string, value interface{}) *Query{
-	c.dataForBuilding = append(c.dataForBuilding, c.trf(FIELD, field))
+	c.dataForBuilding = append(c.dataForBuilding, c.trf(Field, field))
 	c.dataForBuilding = append(c.dataForBuilding, c.trf(OR, value))
 	return c
 }
 
 func (c *Query) WhereIn(field string, value []interface{}) *Query{
 	c.dataForBuilding = append(c.dataForBuilding, c.trf(IN, field))
-	c.dataForBuilding = append(c.dataForBuilding, c.trf(IN_VALUE, c.generateInValue(value)))
+	c.dataForBuilding = append(c.dataForBuilding, c.trf(InValue, c.generateInValue(value)))
 	return c
 }
 
 func (c *Query) WhereNotIn(field string, value []interface{}) *Query{
-	c.dataForBuilding = append(c.dataForBuilding, c.trf(NOT_IN, field))
-	c.dataForBuilding = append(c.dataForBuilding, c.trf(IN_VALUE, c.generateInValue(value)))
+	c.dataForBuilding = append(c.dataForBuilding, c.trf(NotIn, field))
+	c.dataForBuilding = append(c.dataForBuilding, c.trf(InValue, c.generateInValue(value)))
 	return c
 }
 
 func (c *Query) WhereInModify(field string, value string) *Query{
-	c.dataForBuilding = append(c.dataForBuilding, c.trf(IN_MDF, field))
-	c.dataForBuilding = append(c.dataForBuilding, c.trf(IN_VALUE_MDF, value))
+	c.dataForBuilding = append(c.dataForBuilding, c.trf(InMdf, field))
+	c.dataForBuilding = append(c.dataForBuilding, c.trf(InValueMdf, value))
 	return c
 }
 
 func (c *Query) WhereNotInModify(field string, value string) *Query{
-	c.dataForBuilding = append(c.dataForBuilding, c.trf(NOT_IN_MDF, field))
-	c.dataForBuilding = append(c.dataForBuilding, c.trf(IN_VALUE_MDF, value))
+	c.dataForBuilding = append(c.dataForBuilding, c.trf(NotInMdf, field))
+	c.dataForBuilding = append(c.dataForBuilding, c.trf(InValueMdf, value))
 	return c
 }
 
 func (c *Query) JoinInner(table string, link string) *Query{
-	c.dataForBuilding = append(c.dataForBuilding, c.trf(JOIN_INNER, table))
-	c.dataForBuilding = append(c.dataForBuilding, c.trf(JOIN_LINK, link))
+	c.dataForBuilding = append(c.dataForBuilding, c.trf(JoinInner, table))
+	c.dataForBuilding = append(c.dataForBuilding, c.trf(JoinLink, link))
 	return c
 }
 
 func (c *Query) JoinLeft(table string, link string) *Query{
-	c.dataForBuilding = append(c.dataForBuilding, c.trf(JOIN_LEFT, table))
-	c.dataForBuilding = append(c.dataForBuilding, c.trf(JOIN_LINK, link))
+	c.dataForBuilding = append(c.dataForBuilding, c.trf(JoinLeft, table))
+	c.dataForBuilding = append(c.dataForBuilding, c.trf(JoinLink, link))
 	return c
 }
 
 func (c *Query) BktStart() *Query{
-	c.dataForBuilding = append(c.dataForBuilding, c.trf(BKT_START, true))
+	c.dataForBuilding = append(c.dataForBuilding, c.trf(BktStart, true))
 	return c
 }
 
 func (c *Query) BktEnd() *Query{
-	c.dataForBuilding = append(c.dataForBuilding, c.trf(BKT_END, true))
+	c.dataForBuilding = append(c.dataForBuilding, c.trf(BktEnd, true))
 	return c
 }
 
 func (c *Query) Update(table string, data ...map[string]interface{}) *Query {
-	c.dataForBuilding = append(c.dataForBuilding, c.trf(UPDATE, c.mysqlRealEscapeString(table)))
-	var UpdateSet []string
+	c.dataForBuilding = append(c.dataForBuilding, c.trf(Update, c.mysqlRealEscapeString(table)))
+	var UpdateSetSlice []string
 	for _, r := range data {
 		for field, result := range r{
-			UpdateSet = append(UpdateSet, fmt.Sprintf("%v='%v'", c.mysqlRealEscapeString(field), c.mysqlRealEscapeString(result)))
+			UpdateSetSlice = append(UpdateSetSlice, fmt.Sprintf("%v='%v'", c.mysqlRealEscapeString(field), c.mysqlRealEscapeString(result)))
 		}
 	}
-	c.dataForBuilding = append(c.dataForBuilding, c.trf(UPDATE_SET, strings.Join(UpdateSet, ", ")))
+	c.dataForBuilding = append(c.dataForBuilding, c.trf(UpdateSet, strings.Join(UpdateSetSlice, ", ")))
 
 	return c
 }
 
 func (c *Query) Incr(data ...interface{}) *Query{
 	if len(data) == 1 {
-		c.dataForBuilding = append(c.dataForBuilding, c.trf(INCR, c.mysqlRealEscapeString(data[0])))
+		c.dataForBuilding = append(c.dataForBuilding, c.trf(Incr, c.mysqlRealEscapeString(data[0])))
 	}else{
 		for i, value := range data {
 			if i==0 {
-				c.dataForBuilding = append(c.dataForBuilding, c.trf(UPDATE, c.mysqlRealEscapeString(value)))
+				c.dataForBuilding = append(c.dataForBuilding, c.trf(Update, c.mysqlRealEscapeString(value)))
 			} else {
-				c.dataForBuilding = append(c.dataForBuilding, c.trf(INCR, c.mysqlRealEscapeString(value)))
+				c.dataForBuilding = append(c.dataForBuilding, c.trf(Incr, c.mysqlRealEscapeString(value)))
 			}
 		}
 	}
@@ -140,13 +140,13 @@ func (c *Query) Incr(data ...interface{}) *Query{
 
 func (c *Query) Decr(data ...interface{}) *Query{
 	if len(data) == 1 {
-		c.dataForBuilding = append(c.dataForBuilding, c.trf(DECR, c.mysqlRealEscapeString(data[0])))
+		c.dataForBuilding = append(c.dataForBuilding, c.trf(Decr, c.mysqlRealEscapeString(data[0])))
 	}else{
 		for i, value := range data {
 			if i==0 {
-				c.dataForBuilding = append(c.dataForBuilding, c.trf(UPDATE, c.mysqlRealEscapeString(value)))
+				c.dataForBuilding = append(c.dataForBuilding, c.trf(Update, c.mysqlRealEscapeString(value)))
 			} else {
-				c.dataForBuilding = append(c.dataForBuilding, c.trf(DECR, c.mysqlRealEscapeString(value)))
+				c.dataForBuilding = append(c.dataForBuilding, c.trf(Decr, c.mysqlRealEscapeString(value)))
 			}
 		}
 	}
@@ -164,11 +164,21 @@ func (c *Query) AddColumn(columns ...*Schema) *Query{
 	return c
 }
 
+func (c *Query)CreateIndex(fields ...*Schema)*Query{
+	sqlIndex := make([]string, 0, len(fields))
+	for _, r := range fields {
+		sqlIndex = append(sqlIndex, r.returnIndex())
+	}
 
-func (c *Query) returnColumn() string {
 
-	return ""
+	return c
 }
+
+func (c *Query)CreateTable(name string)*Query{
+
+	return c
+}
+
 
 
 
@@ -185,13 +195,13 @@ func (c *Query) Build() string{
 	for _, box := range c.dataForBuilding{
 		for key, value := range box{
 			switch key{
-			case SELECT:
+			case Select:
 				SelectSlice = append(SelectSlice, fmt.Sprintf("%v", c.mysqlRealEscapeString(value)))
 
-			case FROM:
+			case From:
 				FromSlice = append(FromSlice, fmt.Sprintf("%v", value))
 
-			case FIELD:
+			case Field:
 				var field string
 				if value == nil{
 				field = fmt.Sprintf("%v", c.mysqlRealEscapeString(value))
@@ -220,43 +230,43 @@ func (c *Query) Build() string{
 			case IN:
 				WhereSlice = append(WhereSlice, fmt.Sprintf("%v IN ", c.mysqlRealEscapeString(value)))
 
-			case NOT_IN:
+			case NotIn:
 				WhereSlice = append(WhereSlice, fmt.Sprintf("%v NOT IN ", c.mysqlRealEscapeString(value)))
 
-			case IN_VALUE:
+			case InValue:
 				WhereSlice = append(WhereSlice, fmt.Sprintf("%v", value))
 				WhereSlice = append(WhereSlice, "AND")
 
-			case IN_MDF:
+			case InMdf:
 				WhereSlice = append(WhereSlice, fmt.Sprintf("%v IN ", value))
 
-			case NOT_IN_MDF:
+			case NotInMdf:
 				WhereSlice = append(WhereSlice, fmt.Sprintf("%v NOT IN ", value))
 
-			case IN_VALUE_MDF:
+			case InValueMdf:
 				WhereSlice = append(WhereSlice, fmt.Sprintf("(%v)", value))
 				WhereSlice = append(WhereSlice, "AND")
 
-			case JOIN_INNER:
+			case JoinInner:
 				JoinSlice = append(JoinSlice, fmt.Sprintf("INNER JOIN %v", value))
 
-			case JOIN_LEFT:
+			case JoinLeft:
 				JoinSlice = append(JoinSlice, fmt.Sprintf("LEFT JOIN %v", value))
 
-			case JOIN_LINK:
+			case JoinLink:
 				JoinSlice = append(JoinSlice, fmt.Sprintf(" ON %v", value))
 
-			case BKT_START:
+			case BktStart:
 				WhereSlice = append(WhereSlice, "(")
-			case BKT_END:
+			case BktEnd:
 				WhereSlice = append(WhereSlice, ")")
-			case UPDATE:
+			case Update:
 				UpdateSlice = fmt.Sprintf("UPDATE %v", value)
-			case UPDATE_SET:
+			case UpdateSet:
 				UpdateParamsSlice = append(UpdateParamsSlice, fmt.Sprintf(" %s ", value))
-			case INCR:
+			case Incr:
 				UpdateParamsSlice = append(UpdateParamsSlice, fmt.Sprintf(" %s = %s+1 ", value, value))
-			case DECR:
+			case Decr:
 				UpdateParamsSlice = append(UpdateParamsSlice, fmt.Sprintf(" %s = %s-1 ", value, value))
 			}
 		}
