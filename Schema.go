@@ -1,9 +1,8 @@
 package builder
 
 type Schema struct {
-	init *Schema
-}
 
+}
 
 
 
@@ -109,7 +108,9 @@ func (c *Schema)GetInit() bool{
 
 func (c *Schema)Transform() *Schema{
 	if c.GetInit()==false {
-		c.init = &Schema{}
+		data := &Schema{}
+		return data
+	}else{
+		return c
 	}
-	return c.init
 }
