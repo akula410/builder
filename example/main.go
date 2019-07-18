@@ -34,6 +34,7 @@ func main(){
 
 	fmt.Println(data)
 
+	fmt.Println("============================")
 	query.AddColumn(
 		query.ColumnPrimaryKey(11).Name("id_column"),
 		query.ColumnInt(11).Name("count_column").NotNull(true).DefaultValue(0),

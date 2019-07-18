@@ -165,6 +165,7 @@ func (c *Schema)returnColumn()(string, string, string){
 	//Init
 	columnNull = "NULL"
 
+	fmt.Println(c.column)
 	for key, value := range c.column {
 		switch key {
 		case SchemaTypePk:
@@ -172,12 +173,14 @@ func (c *Schema)returnColumn()(string, string, string){
 			columnIndex = fmt.Sprintf("%v", c.column[SchemaName])
 			columnType = fmt.Sprintf("INT(%v)", value)
 			columnNull = "NOT NULL"
+			columnAutoIncrement = "AUTO_INCREMENT"
 
 		case SchemaTypeBigPk:
 			columnPrimaryKey = fmt.Sprintf("%v", c.column[SchemaName])
 			columnIndex = fmt.Sprintf("%v", c.column[SchemaName])
 			columnType = fmt.Sprintf("BIGINT(%v)", value)
 			columnNull = "NOT NULL"
+			columnAutoIncrement = "AUTO_INCREMENT"
 
 		case SchemaTypeString:
 			columnType = fmt.Sprintf("VARCHAR(%v)", value)
@@ -250,26 +253,33 @@ func (c *Schema)returnColumn()(string, string, string){
 		if len(columnName)>0 {
 			sqlText = append(sqlText, columnName)
 		}
+
 		if len(columnType)>0 {
 			sqlText = append(sqlText, columnType)
 		}
+
 		if len(columnDefault)>0 {
 			sqlText = append(sqlText, columnDefault)
 		}
+
 		if len(columnNull)>0{
 			sqlText = append(sqlText, columnNull)
 		}else{
 			sqlText = append(sqlText, "NULL")
 		}
+
 		if len(columnAutoIncrement)>0 {
 			sqlText = append(sqlText, columnAutoIncrement)
 		}
+
 		if len(columnComment)>0 {
 			sqlText = append(sqlText, columnComment)
 		}
+
 		if len(columnUnsigned)>0 || len(columnPrimaryKey)>0 {
 			sqlText = append(sqlText, columnUnsigned)
 		}
+
 		if _, ok := c.column[SchemaIndexName]; ok {
 			columnIndex = fmt.Sprintf("%v", fmt.Sprintf("%v", c.column[SchemaIndexName]))
 		}
