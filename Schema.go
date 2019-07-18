@@ -297,6 +297,9 @@ func (c *Schema)returnColumn()(string, string, string){
 	fmt.Println(columnPrimaryKey)
 	fmt.Println(columnIndex)
 	fmt.Println("------------------")
+	fmt.Println("==================")
+	strings.Join(sqlText, " ")
+	fmt.Println("==================")
 
 
 	return strings.Join(sqlText, " "), columnPrimaryKey, columnIndex
