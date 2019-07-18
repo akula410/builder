@@ -250,36 +250,52 @@ func (c *Schema)returnColumn()(string, string, string){
 			columnIndex = fmt.Sprintf("%v", c.column[SchemaName])
 		}
 
+		fmt.Println("--------1----------")
+		fmt.Println(sqlText)
 		if len(columnName)>0 {
 			sqlText = append(sqlText, columnName)
 		}
 
+		fmt.Println("--------2----------")
+		fmt.Println(sqlText)
 		if len(columnType)>0 {
 			sqlText = append(sqlText, columnType)
 		}
 
+		fmt.Println("--------3----------")
+		fmt.Println(sqlText)
 		if len(columnDefault)>0 {
 			sqlText = append(sqlText, columnDefault)
 		}
 
+		fmt.Println("--------4----------")
+		fmt.Println(sqlText)
 		if len(columnNull)>0{
 			sqlText = append(sqlText, columnNull)
 		}else{
 			sqlText = append(sqlText, "NULL")
 		}
 
+		fmt.Println("--------5----------")
+		fmt.Println(sqlText)
 		if len(columnAutoIncrement)>0 {
 			sqlText = append(sqlText, columnAutoIncrement)
 		}
 
+		fmt.Println("--------6---------")
+		fmt.Println(sqlText)
 		if len(columnComment)>0 {
 			sqlText = append(sqlText, columnComment)
 		}
 
+		fmt.Println("--------7----------")
+		fmt.Println(sqlText)
 		if len(columnUnsigned)>0 || len(columnPrimaryKey)>0 {
 			sqlText = append(sqlText, columnUnsigned)
 		}
 
+		fmt.Println("--------8----------")
+		fmt.Println(sqlText)
 		if _, ok := c.column[SchemaIndexName]; ok {
 			columnIndex = fmt.Sprintf("%v", fmt.Sprintf("%v", c.column[SchemaIndexName]))
 		}
