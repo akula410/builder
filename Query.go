@@ -205,32 +205,11 @@ func (c *Query)TableEngine(name string)*Query{
 
 func (c *Query)CreateTable(name string){
 	sqlRequest := fmt.Sprintf("CREATE TABLE %s (%s)ENGINE=%s", name, c.getColumnsTable(), c.tableEngine)
-
-	ins, err := Conn().Prepare(sqlRequest)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	_, err = ins.Exec()
-
-	if err != nil {
-		panic(err.Error())
-	}
+	c.sqlRequest(sqlRequest)
 }
-func (c *Query)CreateTableIfNotExist(name string)*Query{
+func (c *Query)CreateTableIfNotExist(name string){
 	sqlRequest := fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (%s)ENGINE=%s", name, c.getColumnsTable(), c.tableEngine)
-
-	ins, err := Conn().Prepare(sqlRequest)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	_, err = ins.Exec()
-
-	if err != nil {
-		panic(err.Error())
-	}
-	return c
+	c.sqlRequest(sqlRequest)
 }
 
 func (c *Query)getColumnsTable()string{
@@ -250,6 +229,28 @@ func (c *Query)getColumnsTable()string{
 	return strings.Join(sqlRequestBuilder, ", ")
 }
 
+func (c *Query)DropTable(tables ...string){
+	sqlRequest := fmt.Sprintf("DROP TABLE %s", strings.Join(tables, ", "))
+	c.sqlRequest(sqlRequest)
+}
+
+func (c *Query)dropTableIfExists(tables ...string){
+	sqlRequest := fmt.Sprintf("DROP TABLE IF EXISTS %s", strings.Join(tables, ", "))
+	c.sqlRequest(sqlRequest)
+}
+
+func (c *Query)sqlRequest(sqlRequest string){
+	ins, err := Conn().Prepare(sqlRequest)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	_, err = ins.Exec()
+
+	if err != nil {
+		panic(err.Error())
+	}
+}
 
 
 
