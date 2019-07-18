@@ -159,7 +159,7 @@ func (c *Query) AddColumn(columns ...*Schema) *Query{
 	for _, r := range columns {
 		sqlColumn = append(sqlColumn, r.returnColumn())
 	}
-
+	fmt.Println(sqlColumn)
 
 	return c
 }
