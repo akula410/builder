@@ -171,11 +171,13 @@ func (c *Schema)returnColumn()(string, string, string){
 			columnPrimaryKey = fmt.Sprintf("%v", c.column[SchemaName])
 			columnIndex = fmt.Sprintf("%v", c.column[SchemaName])
 			columnType = fmt.Sprintf("INT(%v)", value)
+			columnNull = "NOT NULL"
 
 		case SchemaTypeBigPk:
 			columnPrimaryKey = fmt.Sprintf("%v", c.column[SchemaName])
 			columnIndex = fmt.Sprintf("%v", c.column[SchemaName])
 			columnType = fmt.Sprintf("BIGINT(%v)", value)
+			columnNull = "NOT NULL"
 
 		case SchemaTypeString:
 			columnType = fmt.Sprintf("VARCHAR(%v)", value)
@@ -243,8 +245,6 @@ func (c *Schema)returnColumn()(string, string, string){
 
 		case SchemaIndex:
 			columnIndex = fmt.Sprintf("%v", c.column[SchemaName])
-
-
 		}
 
 		if len(columnName)>0 {
@@ -258,7 +258,7 @@ func (c *Schema)returnColumn()(string, string, string){
 		}
 		if len(columnNull)>0{
 			sqlText = append(sqlText, columnNull)
-		}else if len(columnPrimaryKey)==0{
+		}else{
 			sqlText = append(sqlText, "NULL")
 		}
 		if len(columnAutoIncrement)>0 {

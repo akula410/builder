@@ -167,6 +167,7 @@ func (c *Query) AddColumn(columns ...*Schema) *Query{
 
 	for _, r := range columns {
 		generateSql, primaryKey, IndexColumn := r.returnColumn()
+		fmt.Println(generateSql)
 		sqlColumn = append(sqlColumn, generateSql)
 		if len(primaryKey)>0 {
 			sqlPrimaryKey = primaryKey
