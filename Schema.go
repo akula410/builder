@@ -270,7 +270,7 @@ func (c *Schema)returnColumn()(string, string, string){
 		if len(columnUnsigned)>0 || len(columnPrimaryKey)>0 {
 			sqlText = append(sqlText, columnUnsigned)
 		}
-		if len(fmt.Sprintf("%v", c.column[SchemaIndexName]))>0{
+		if _, ok := c.column[SchemaIndexName]; ok {
 			columnIndex = fmt.Sprintf("%v", fmt.Sprintf("%v", c.column[SchemaIndexName]))
 		}
 	}
