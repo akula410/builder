@@ -205,7 +205,7 @@ func (c *Query)TableEngine(name string)*Query{
 
 func (c *Query)CreateTable(name string){
 	sqlRequest := fmt.Sprintf("CREATE TABLE %s (%s)ENGINE=%s", name, c.getColumnsTable(), c.tableEngine)
-	fmt.Println(sqlRequest)
+
 	ins, err := Conn().Prepare(sqlRequest)
 	if err != nil {
 		panic(err.Error())

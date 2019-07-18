@@ -158,7 +158,7 @@ func (c *Schema)returnColumn()(string, string, string){
 	var columnNull string
 	var columnAutoIncrement string
 	var columnComment string
-	var columnUnsigned string
+	var columnUnsigned bool
 	var columnPrimaryKey string
 	var columnIndex string
 
@@ -244,7 +244,7 @@ func (c *Schema)returnColumn()(string, string, string){
 			columnComment = fmt.Sprintf("COMMENT '%v'", value)
 
 		case SchemaUnsigned:
-			columnUnsigned = "UNSIGNED"
+			columnUnsigned = true
 
 		case SchemaIndex:
 			columnIndex = fmt.Sprintf("%v", c.column[SchemaName])
@@ -264,6 +264,10 @@ func (c *Schema)returnColumn()(string, string, string){
 		sqlText = append(sqlText, columnDefault)
 	}
 
+	if columnUnsigned || len(columnPrimaryKey)>0 {
+		sqlText = append(sqlText, "UNSIGNED")
+	}
+
 	if len(columnNull)>0{
 		sqlText = append(sqlText, columnNull)
 	}else{
@@ -276,10 +280,6 @@ func (c *Schema)returnColumn()(string, string, string){
 
 	if len(columnComment)>0 {
 		sqlText = append(sqlText, columnComment)
-	}
-
-	if len(columnUnsigned)>0 || len(columnPrimaryKey)>0 {
-		sqlText = append(sqlText, columnUnsigned)
 	}
 
 	if _, ok := c.column[SchemaIndexName]; ok {
