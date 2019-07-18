@@ -174,7 +174,6 @@ func (c *Schema)returnColumn()(string, string, string){
 			columnType = fmt.Sprintf("INT(%v)", value)
 			columnNull = "NOT NULL"
 			columnAutoIncrement = "AUTO_INCREMENT"
-			columnUnsigned = "UNSIGNED"
 
 		case SchemaTypeBigPk:
 			columnPrimaryKey = fmt.Sprintf("%v", c.column[SchemaName])
@@ -182,7 +181,6 @@ func (c *Schema)returnColumn()(string, string, string){
 			columnType = fmt.Sprintf("BIGINT(%v)", value)
 			columnNull = "NOT NULL"
 			columnAutoIncrement = "AUTO_INCREMENT"
-			columnUnsigned = "UNSIGNED"
 
 		case SchemaTypeString:
 			columnType = fmt.Sprintf("VARCHAR(%v)", value)
