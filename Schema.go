@@ -135,9 +135,9 @@ func (c *Schema)Unique()*Schema{
 	return data
 }
 
-func (c *Schema)Index(field string)*Schema{
+func (c *Schema)Index()*Schema{
 	data := c.Transform()
-	data.column[SchemaIndex] = field
+	data.column[SchemaIndex] = true
 	return data
 }
 
@@ -150,7 +150,7 @@ func (c *Schema)IndexName(name string)*Schema{
 
 
 
-func (c *Schema)returnColumn()(string, string){
+func (c *Schema)returnColumn()(string, string, string){
 	sqlText := make([]string, 0)
 	var columnName string
 	var columnType string
@@ -160,6 +160,7 @@ func (c *Schema)returnColumn()(string, string){
 	var columnComment string
 	var columnUnsigned string
 	var columnPrimaryKey string
+	var columnIndex string
 
 	//Init
 	columnNull = "NULL"
@@ -168,10 +169,12 @@ func (c *Schema)returnColumn()(string, string){
 		switch key {
 		case SchemaTypePk:
 			columnPrimaryKey = fmt.Sprintf("%v", c.column[SchemaName])
+			columnIndex = fmt.Sprintf("%v", c.column[SchemaName])
 			columnType = fmt.Sprintf("INT(%v)", value)
 
 		case SchemaTypeBigPk:
 			columnPrimaryKey = fmt.Sprintf("%v", c.column[SchemaName])
+			columnIndex = fmt.Sprintf("%v", c.column[SchemaName])
 			columnType = fmt.Sprintf("BIGINT(%v)", value)
 
 		case SchemaTypeString:
@@ -238,6 +241,10 @@ func (c *Schema)returnColumn()(string, string){
 		case SchemaUnsigned:
 			columnUnsigned = "UNSIGNED"
 
+		case SchemaIndex:
+			columnIndex = fmt.Sprintf("%v", c.column[SchemaName])
+
+
 		}
 
 		if len(columnName)>0 {
@@ -263,10 +270,13 @@ func (c *Schema)returnColumn()(string, string){
 		if len(columnUnsigned)>0 || len(columnPrimaryKey)>0 {
 			sqlText = append(sqlText, columnUnsigned)
 		}
+		if len(fmt.Sprintf("%v", c.column[SchemaIndexName]))>0{
+			columnIndex = fmt.Sprintf("%v", fmt.Sprintf("%v", c.column[SchemaIndexName]))
+		}
 	}
 
 
-	return strings.Join(sqlText, " "), columnPrimaryKey
+	return strings.Join(sqlText, " "), columnPrimaryKey, columnIndex
 }
 
 func (c *Schema)returnIndex()string{
