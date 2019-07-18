@@ -35,7 +35,8 @@ func main(){
 	fmt.Println(data)
 
 	query.AddColumn(
-		query.ColumnBigPk(11).ColumnBigInt(11),
-		query.ColumnBigPk(12).ColumnBigInt(11),
+		query.ColumnPrimaryKey(11).Name("id_column"),
+		query.ColumnInt(11).Name("count_column").NotNull(true).DefaultValue(0),
+		query.ColumnString(250).Name("string_column").Comment("Comment"),
 		)
 }

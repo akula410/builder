@@ -151,12 +151,10 @@ func (c *Schema)IndexName(name string)*Schema{
 
 
 func (c *Schema)returnColumn()(string, string){
-	var sqlText string
-
+	sqlText := make([]string, 0)
 	var columnName string
 	var columnType string
 	var columnDefault string
-	var columnDefaultCurrent string
 	var columnNull string
 	var columnAutoIncrement string
 	var columnComment string
@@ -207,7 +205,7 @@ func (c *Schema)returnColumn()(string, string){
 			columnType = "DATETIME"
 		case SchemaTypeTimeStamp:
 			columnType = "TIMESTAMP"
-			columnDefaultCurrent = fmt.Sprintf("%v", value)
+			columnType = fmt.Sprintf("TIMESTAMP %v", value)
 
 		case SchemaTypeTime:
 			columnType = "TIME"
@@ -241,10 +239,34 @@ func (c *Schema)returnColumn()(string, string){
 			columnUnsigned = "UNSIGNED"
 
 		}
+
+		if len(columnName)>0 {
+			sqlText = append(sqlText, columnName)
+		}
+		if len(columnType)>0 {
+			sqlText = append(sqlText, columnType)
+		}
+		if len(columnDefault)>0 {
+			sqlText = append(sqlText, columnDefault)
+		}
+		if len(columnNull)>0{
+			sqlText = append(sqlText, columnNull)
+		}else if len(columnPrimaryKey)==0{
+			sqlText = append(sqlText, "NULL")
+		}
+		if len(columnAutoIncrement)>0 {
+			sqlText = append(sqlText, columnAutoIncrement)
+		}
+		if len(columnComment)>0 {
+			sqlText = append(sqlText, columnComment)
+		}
+		if len(columnUnsigned)>0 || len(columnPrimaryKey)>0 {
+			sqlText = append(sqlText, columnUnsigned)
+		}
 	}
 
 
-	return sqlText, columnPrimaryKey
+	return strings.Join(sqlText, " "), columnPrimaryKey
 }
 
 func (c *Schema)returnIndex()string{
