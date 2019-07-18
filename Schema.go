@@ -174,6 +174,7 @@ func (c *Schema)returnColumn()(string, string, string){
 			columnType = fmt.Sprintf("INT(%v)", value)
 			columnNull = "NOT NULL"
 			columnAutoIncrement = "AUTO_INCREMENT"
+			columnUnsigned = "UNSIGNED"
 
 		case SchemaTypeBigPk:
 			columnPrimaryKey = fmt.Sprintf("%v", c.column[SchemaName])
@@ -181,6 +182,7 @@ func (c *Schema)returnColumn()(string, string, string){
 			columnType = fmt.Sprintf("BIGINT(%v)", value)
 			columnNull = "NOT NULL"
 			columnAutoIncrement = "AUTO_INCREMENT"
+			columnUnsigned = "UNSIGNED"
 
 		case SchemaTypeString:
 			columnType = fmt.Sprintf("VARCHAR(%v)", value)
@@ -252,71 +254,39 @@ func (c *Schema)returnColumn()(string, string, string){
 
 	}
 
-	fmt.Println("--------1----------")
-	fmt.Println(sqlText)
 	if len(columnName)>0 {
 		sqlText = append(sqlText, columnName)
 	}
 
-	fmt.Println("--------2----------")
-	fmt.Println(sqlText)
 	if len(columnType)>0 {
 		sqlText = append(sqlText, columnType)
 	}
 
-	fmt.Println("--------3----------")
-	fmt.Println(sqlText)
 	if len(columnDefault)>0 {
 		sqlText = append(sqlText, columnDefault)
 	}
 
-	fmt.Println("--------4----------")
-	fmt.Println(sqlText)
 	if len(columnNull)>0{
 		sqlText = append(sqlText, columnNull)
 	}else{
 		sqlText = append(sqlText, "NULL")
 	}
 
-	fmt.Println("--------5----------")
-	fmt.Println(sqlText)
 	if len(columnAutoIncrement)>0 {
 		sqlText = append(sqlText, columnAutoIncrement)
 	}
 
-	fmt.Println("--------6---------")
-	fmt.Println(sqlText)
 	if len(columnComment)>0 {
 		sqlText = append(sqlText, columnComment)
 	}
 
-	fmt.Println("--------7----------")
-	fmt.Println(sqlText)
 	if len(columnUnsigned)>0 || len(columnPrimaryKey)>0 {
 		sqlText = append(sqlText, columnUnsigned)
 	}
 
-	fmt.Println("--------8----------")
-	fmt.Println(sqlText)
 	if _, ok := c.column[SchemaIndexName]; ok {
 		columnIndex = fmt.Sprintf("%v", fmt.Sprintf("%v", c.column[SchemaIndexName]))
 	}
-	fmt.Println("------------------")
-	fmt.Println(sqlText)
-	fmt.Println(columnName)
-	fmt.Println(columnType)
-	fmt.Println(columnDefault)
-	fmt.Println(columnNull)
-	fmt.Println(columnAutoIncrement)
-	fmt.Println(columnComment)
-	fmt.Println(columnUnsigned)
-	fmt.Println(columnPrimaryKey)
-	fmt.Println(columnIndex)
-	fmt.Println("------------------")
-	fmt.Println("==================")
-	fmt.Println(strings.Join(sqlText, " "))
-	fmt.Println("==================")
-
 
 	return strings.Join(sqlText, " "), columnPrimaryKey, columnIndex
 }
