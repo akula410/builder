@@ -14,6 +14,12 @@ type Query struct {
 
 	alias string
 	dataForBuilding []map[int]interface{}
+
+	schemaColumns []string
+	schemaIndex []string
+	schemaPrimaryKey string
+
+	tableEngine string
 }
 
 
@@ -156,30 +162,92 @@ func (c *Query) Decr(data ...interface{}) *Query{
 
 func (c *Query) AddColumn(columns ...*Schema) *Query{
 	sqlColumn := make([]string, 0, len(columns))
+	var sqlPrimaryKey string
+	sqlColumnIndex := make([]string, 0)
+
 	for _, r := range columns {
 		generateSql, primaryKey, IndexColumn := r.returnColumn()
 		sqlColumn = append(sqlColumn, generateSql)
-		fmt.Println(primaryKey)
-		fmt.Println(IndexColumn)
+		if len(primaryKey)>0 {
+			sqlPrimaryKey = primaryKey
+		}
+		if len(IndexColumn)>0{
+			sqlColumnIndex = append(sqlColumnIndex, IndexColumn)
+		}
 	}
-	fmt.Println(sqlColumn)
+
+	if c.schemaColumns != nil && len(sqlColumn)>0 {
+		c.schemaColumns = append(c.schemaColumns, sqlColumn...)
+	}else if c.schemaColumns == nil && len(sqlColumn)>0{
+		c.schemaColumns = make([]string, 0)
+		c.schemaColumns = append(c.schemaColumns, sqlColumn...)
+	}
+
+	if len(sqlPrimaryKey)>0 {
+		c.schemaPrimaryKey = sqlPrimaryKey
+	}
+
+	if c.schemaIndex != nil && len(sqlColumnIndex)>0 {
+		c.schemaIndex = append(c.schemaIndex, sqlColumnIndex...)
+	}else if c.schemaIndex == nil && len(sqlColumnIndex)>0{
+		c.schemaIndex = make([]string, 0)
+		c.schemaIndex = append(c.schemaIndex, sqlColumnIndex...)
+	}
+
 
 	return c
 }
 
-func (c *Query)CreateIndex(fields ...*Schema)*Query{
-	sqlIndex := make([]string, 0, len(fields))
-	for _, r := range fields {
-		sqlIndex = append(sqlIndex, r.returnIndex())
-	}
-
-
+func (c *Query)TableEngine(name string)*Query{
+	c.tableEngine = name
 	return c
 }
 
-func (c *Query)CreateTable(name string)*Query{
+func (c *Query)CreateTable(name string){
+	sqlRequest := fmt.Sprintf("CREATE TABLE %s (%s)ENGINE=%s", name, c.getColumnsTable(), c.tableEngine)
 
+	ins, err := Conn().Prepare(sqlRequest)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	_, err = ins.Exec()
+
+	if err != nil {
+		panic(err.Error())
+	}
+}
+func (c *Query)CreateTableIfNotExist(name string)*Query{
+	sqlRequest := fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (%s)ENGINE=%s", name, c.getColumnsTable(), c.tableEngine)
+
+	ins, err := Conn().Prepare(sqlRequest)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	_, err = ins.Exec()
+
+	if err != nil {
+		panic(err.Error())
+	}
 	return c
+}
+
+func (c *Query)getColumnsTable()string{
+	if len(c.tableEngine) == 0 {
+		c.tableEngine = "INNODB"
+	}
+	sqlRequestBuilder := make([]string, 0)
+	if len(c.schemaColumns)>0{
+		sqlRequestBuilder = append(sqlRequestBuilder, c.schemaColumns...)
+	}
+	if len(c.schemaPrimaryKey)>0{
+		sqlRequestBuilder = append(sqlRequestBuilder, fmt.Sprintf("PRIMARY KEY (%s)", c.schemaPrimaryKey))
+	}
+	if len(c.schemaIndex)>0{
+		sqlRequestBuilder = append(sqlRequestBuilder, fmt.Sprintf("INDEX (%s)", strings.Join(c.schemaIndex, ", ")))
+	}
+	return strings.Join(sqlRequestBuilder, ", ")
 }
 
 

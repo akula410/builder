@@ -20,6 +20,9 @@ const Update = 17
 const UpdateSet = 18
 const Incr = 19
 const Decr = 20
+const Columns = 21
+const ColumnPrimaryKey = 22
+const ColumnsIndex = 23
 
 
 const SchemaTypePk        = "pk"
