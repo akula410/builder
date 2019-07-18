@@ -234,7 +234,7 @@ func (c *Query)DropTable(tables ...string){
 	c.sqlRequest(sqlRequest)
 }
 
-func (c *Query)dropTableIfExists(tables ...string){
+func (c *Query)DropTableIfExists(tables ...string){
 	sqlRequest := fmt.Sprintf("DROP TABLE IF EXISTS %s", strings.Join(tables, ", "))
 	c.sqlRequest(sqlRequest)
 }

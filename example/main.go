@@ -40,5 +40,7 @@ func main(){
 		query.ColumnInt(11).Name("count_column").NotNull(true).DefaultValue(0),
 		query.ColumnString(250).Name("string_column").Comment("Comment").Index(),
 		).
-		CreateTable("NewTable")
+		CreateTableIfNotExist("NewTable")
+
+	query.DropTable("NewTable")
 }
