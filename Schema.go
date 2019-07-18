@@ -285,6 +285,19 @@ func (c *Schema)returnColumn()(string, string, string){
 		}
 	}
 
+	fmt.Println("------------------")
+	fmt.Println(sqlText)
+	fmt.Println(columnName)
+	fmt.Println(columnType)
+	fmt.Println(columnDefault)
+	fmt.Println(columnNull)
+	fmt.Println(columnAutoIncrement)
+	fmt.Println(columnComment)
+	fmt.Println(columnUnsigned)
+	fmt.Println(columnPrimaryKey)
+	fmt.Println(columnIndex)
+	fmt.Println("------------------")
+
 
 	return strings.Join(sqlText, " "), columnPrimaryKey, columnIndex
 }
