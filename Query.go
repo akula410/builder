@@ -510,6 +510,7 @@ func (c *Query) Delete() {
 
 }
 
+//Добавление ключа и значения в общую корробку
 func (c *Query) trf(key int, value interface{}) map[int]interface{}{
 	trf := make(map[int]interface{})
 	trf[key] = value

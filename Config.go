@@ -39,15 +39,17 @@ const SchemaTypeTime      = "time"
 const SchemaTypeDate      = "date"
 const SchemaTypeBinary    = "binary"
 const SchemaTypeBoolean   = "boolean"
-const SchemaTypeMoney     = "money"
 
 const SchemaName         = "name"
 const SchemaNotNull      = "notnull"
 const SchemaDefaultValue = "default_value"
 const SchemaComment = "comment"
+const SchemaUnsigned = "unsigned"
+
 const SchemaUnique = "unique"
 const SchemaIndex = "index"
 const SchemaIndexName = "index_name"
+
 
 const ConfigCurrentTimestamp = "CURRENT_TIMESTAMP"
 const ConfigUpdateCurrentTimestamp = "CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"

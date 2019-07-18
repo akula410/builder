@@ -1,20 +1,29 @@
 package builder
 
+import (
+	"fmt"
+	"strings"
+)
+
 type Schema struct {
 	init bool
 	column map[string]interface{}
 }
 
 
-
+func (c *Schema)ColumnPrimaryKey(length int)*Schema{
+	data := c.Transform()
+	data.column[SchemaTypePk]=length
+	return data
+}
+func (c *Schema)ColumnBigPrimaryKey(length int)*Schema{
+	data := c.Transform()
+	data.column[SchemaTypeBigPk]=length
+	return data
+}
 func (c *Schema)ColumnBigInt(length int)*Schema{
 	data := c.Transform()
 	data.column[SchemaTypeBigint]=length
-	return data
-}
-func (c *Schema)ColumnBigPk(length int)*Schema{
-	data := c.Transform()
-	data.column[SchemaTypeBigPk]=length
 	return data
 }
 func (c *Schema)ColumnBinary(length int)*Schema{
@@ -55,16 +64,6 @@ func (c *Schema)ColumnFloat(precision float32)*Schema{
 func (c *Schema)ColumnInt(length int)*Schema{
 	data := c.Transform()
 	data.column[SchemaTypeInteger]=length
-	return data
-}
-func (c *Schema)ColumnMoney(precision float32)*Schema{
-	data := c.Transform()
-	data.column[SchemaTypeMoney]=precision
-	return data
-}
-func (c *Schema)ColumnPrimaryKey(length int)*Schema{
-	data := c.Transform()
-	data.column[SchemaTypePk]=length
 	return data
 }
 func (c *Schema)ColumnSmallint(length int)*Schema{
@@ -122,6 +121,14 @@ func (c *Schema)Comment(value string)*Schema{
 	return data
 }
 
+
+
+func (c *Schema)Unsigned()*Schema{
+	data := c.Transform()
+	data.column[SchemaUnsigned] = true
+	return data
+}
+
 func (c *Schema)Unique()*Schema{
 	data := c.Transform()
 	data.column[SchemaUnique] = true
@@ -143,9 +150,101 @@ func (c *Schema)IndexName(name string)*Schema{
 
 
 
-func (c *Schema)returnColumn()string{
+func (c *Schema)returnColumn()(string, string){
+	var sqlText string
 
-	return ""
+	var columnName string
+	var columnType string
+	var columnDefault string
+	var columnDefaultCurrent string
+	var columnNull string
+	var columnAutoIncrement string
+	var columnComment string
+	var columnUnsigned string
+	var columnPrimaryKey string
+
+	//Init
+	columnNull = "NULL"
+
+	for key, value := range c.column {
+		switch key {
+		case SchemaTypePk:
+			columnPrimaryKey = fmt.Sprintf("%v", c.column[SchemaName])
+			columnType = fmt.Sprintf("INT(%v)", value)
+
+		case SchemaTypeBigPk:
+			columnPrimaryKey = fmt.Sprintf("%v", c.column[SchemaName])
+			columnType = fmt.Sprintf("BIGINT(%v)", value)
+
+		case SchemaTypeString:
+			columnType = fmt.Sprintf("VARCHAR(%v)", value)
+
+		case SchemaTypeText:
+			columnType = "TEXT"
+
+		case SchemaTypeTinyint:
+			columnType = fmt.Sprintf("TINYINT(%v)", value)
+
+		case SchemaTypeSmallint:
+			columnType = fmt.Sprintf("SMALLINT(%v)", value)
+
+		case SchemaTypeInteger:
+			columnType = fmt.Sprintf("INTEGER(%v)", value)
+
+		case SchemaTypeBigint:
+			columnType = fmt.Sprintf("BIGINT(%v)", value)
+
+		case SchemaTypeFloat:
+			columnType = fmt.Sprintf("FLOAT(%s)", strings.Replace(fmt.Sprintf("%v", value), ".", ",", 1))
+
+		case SchemaTypeDouble:
+			columnType = fmt.Sprintf("DOUBLE(%s)", strings.Replace(fmt.Sprintf("%v", value), ".", ",", 1))
+
+		case SchemaTypeDecimal:
+			columnType = fmt.Sprintf("DECIMAL(%s)", strings.Replace(fmt.Sprintf("%v", value), ".", ",", 1))
+
+		case SchemaTypeDateTime:
+			columnType = "DATETIME"
+		case SchemaTypeTimeStamp:
+			columnType = "TIMESTAMP"
+			columnDefaultCurrent = fmt.Sprintf("%v", value)
+
+		case SchemaTypeTime:
+			columnType = "TIME"
+
+		case SchemaTypeDate:
+			columnType = "DATE"
+
+		case SchemaTypeBinary:
+			columnType = fmt.Sprintf("BINARY(%v)", value)
+
+		case SchemaTypeBoolean:
+			columnType = "BOOLEAN"
+
+		case SchemaName:
+			columnName = fmt.Sprintf("%v", value)
+
+		case SchemaNotNull:
+			if value == true {
+				columnNull = "NOT NULL"
+			}else{
+				columnNull = "NULL"
+			}
+
+		case SchemaDefaultValue:
+			columnDefault = fmt.Sprintf("DEFAULT '%v'", value)
+
+		case SchemaComment:
+			columnComment = fmt.Sprintf("COMMENT '%v'", value)
+
+		case SchemaUnsigned:
+			columnUnsigned = "UNSIGNED"
+
+		}
+	}
+
+
+	return sqlText, columnPrimaryKey
 }
 
 func (c *Schema)returnIndex()string{
