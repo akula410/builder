@@ -20,6 +20,8 @@ type Query struct {
 	schemaPrimaryKey string
 
 	tableEngine string
+
+	scriptToConsole bool
 }
 
 
@@ -34,6 +36,9 @@ func (c *Query) CreateDatabase(name string, charset string, collation string, no
 }
 
 func (c *Query) Exec(textSql string) sql.Result{
+
+	c.toSendConsole(textSql)
+
 	res, err := Conn().Exec(textSql)
 	if err != nil {
 		panic(err.Error())
@@ -205,7 +210,6 @@ func (c *Query)TableEngine(name string)*Query{
 
 func (c *Query)CreateTable(name string){
 	sqlRequest := fmt.Sprintf("CREATE TABLE `%s` (%s)ENGINE=%s", name, c.getColumnsTable(), c.tableEngine)
-	fmt.Println(sqlRequest)
 	c.sqlRequest(sqlRequest)
 }
 func (c *Query)CreateTableIfNotExist(name string){
@@ -240,7 +244,15 @@ func (c *Query)DropTableIfExists(tables ...string){
 	c.sqlRequest(sqlRequest)
 }
 
+func (c *Query)ShowSqlInConsole()*Query{
+	c.scriptToConsole = true
+	return c
+}
+
 func (c *Query)sqlRequest(sqlRequest string){
+
+	c.toSendConsole(sqlRequest)
+
 	ins, err := Conn().Prepare(sqlRequest)
 	if err != nil {
 		panic(err.Error())
@@ -376,6 +388,9 @@ func (c *Query) Build() string{
 func (c *Query) Apply()int64{
 	var aff int64
 	if textSql := c.Build(); textSql!=""{
+
+		c.toSendConsole(textSql)
+
 		res, err := Conn().Exec(textSql)
 		if err != nil {
 			panic(err.Error())
@@ -394,6 +409,9 @@ func (c *Query) Apply()int64{
 func (c *Query) Rows() []map[string]interface{}{
 	var result []map[string]interface{}
 	if textSql := c.Build(); textSql!=""{
+
+		c.toSendConsole(textSql)
+
 		rows, err := Conn().Query(textSql)
 
 		if err != nil {
@@ -452,6 +470,8 @@ func (c *Query) Row() map[string]interface{} {
 	var result map[string]interface{}
 
 	if textSql := c.Build(); textSql!=""{
+
+		c.toSendConsole(textSql)
 
 		rows, err := Conn().Query(textSql)
 
@@ -553,6 +573,9 @@ func (c *Query) Insert(table string, data []map[string]interface{}) int64{
 		/** Формирование запроса */
 		textSql = fmt.Sprintf("INSERT INTO %s(%s) VALUES %s", table, strings.Join(dataField, ", "), strings.Join(dataValue, ", "))
 
+
+		c.toSendConsole(textSql)
+
 		ins, err := Conn().Prepare(textSql)
 		if err != nil {
 			panic(err.Error())
@@ -629,4 +652,10 @@ func (c *Query) mysqlRealEscapeString(value interface{}) string {
 	}
 
 	return strValue
+}
+
+func (c *Query) toSendConsole(sqlText string){
+	if c.scriptToConsole{
+		fmt.Println(sqlText)
+	}
 }
