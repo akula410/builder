@@ -204,12 +204,12 @@ func (c *Query)TableEngine(name string)*Query{
 }
 
 func (c *Query)CreateTable(name string){
-	sqlRequest := fmt.Sprintf("CREATE TABLE %s (%s)ENGINE=%s", name, c.getColumnsTable(), c.tableEngine)
+	sqlRequest := fmt.Sprintf("CREATE TABLE `%s` (%s)ENGINE=%s", name, c.getColumnsTable(), c.tableEngine)
 	fmt.Println(sqlRequest)
 	c.sqlRequest(sqlRequest)
 }
 func (c *Query)CreateTableIfNotExist(name string){
-	sqlRequest := fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (%s)ENGINE=%s", name, c.getColumnsTable(), c.tableEngine)
+	sqlRequest := fmt.Sprintf("CREATE TABLE IF NOT EXISTS `%s` (%s)ENGINE=%s", name, c.getColumnsTable(), c.tableEngine)
 	c.sqlRequest(sqlRequest)
 }
 
@@ -222,21 +222,21 @@ func (c *Query)getColumnsTable()string{
 		sqlRequestBuilder = append(sqlRequestBuilder, c.schemaColumns...)
 	}
 	if len(c.schemaPrimaryKey)>0{
-		sqlRequestBuilder = append(sqlRequestBuilder, fmt.Sprintf("PRIMARY KEY (%s)", c.schemaPrimaryKey))
+		sqlRequestBuilder = append(sqlRequestBuilder, fmt.Sprintf("PRIMARY KEY (`%s`)", c.schemaPrimaryKey))
 	}
 	if len(c.schemaIndex)>0{
-		sqlRequestBuilder = append(sqlRequestBuilder, fmt.Sprintf("INDEX (%s)", strings.Join(c.schemaIndex, ", ")))
+		sqlRequestBuilder = append(sqlRequestBuilder, fmt.Sprintf("INDEX (`%s`)", strings.Join(c.schemaIndex, "`, `")))
 	}
 	return strings.Join(sqlRequestBuilder, ", ")
 }
 
 func (c *Query)DropTable(tables ...string){
-	sqlRequest := fmt.Sprintf("DROP TABLE %s", strings.Join(tables, ", "))
+	sqlRequest := fmt.Sprintf("DROP TABLE `%s`", strings.Join(tables, "`, `"))
 	c.sqlRequest(sqlRequest)
 }
 
 func (c *Query)DropTableIfExists(tables ...string){
-	sqlRequest := fmt.Sprintf("DROP TABLE IF EXISTS %s", strings.Join(tables, ", "))
+	sqlRequest := fmt.Sprintf("DROP TABLE IF EXISTS `%s`", strings.Join(tables, "`, `"))
 	c.sqlRequest(sqlRequest)
 }
 

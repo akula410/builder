@@ -228,7 +228,7 @@ func (c *Schema)returnColumn()(string, string, string){
 			columnType = "BOOLEAN"
 
 		case SchemaName:
-			columnName = fmt.Sprintf("%v", value)
+			columnName = fmt.Sprintf("`%v`", value)
 
 		case SchemaNotNull:
 			if value == true {
