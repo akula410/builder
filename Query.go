@@ -19,6 +19,12 @@ type Query struct {
 	schemaIndex []string
 	schemaPrimaryKey string
 
+	schemaAfterCreateTable func(*Query)
+	schemaBeforeCreateTable func(*Query)
+
+	schemaAfterDeleteTable func(*Query)
+	schemaBeforeDeleteTable func(*Query)
+
 	tableEngine string
 
 	scriptToConsole bool
@@ -203,6 +209,26 @@ func (c *Query) AddColumn(columns ...*Schema) *Query{
 	return c
 }
 
+func (c *Query) AfterCreateTable(f func(*Query))*Query{
+	c.schemaAfterCreateTable = f
+	return c
+}
+
+func (c *Query) BeforeCreateTable(f func(*Query))*Query{
+	c.schemaBeforeCreateTable = f
+	return c
+}
+
+func (c *Query) AfterDeleteTable(f func(*Query))*Query{
+	c.schemaAfterDeleteTable = f
+	return c
+}
+
+func (c *Query) BeforeDeleteTable(f func(*Query))*Query{
+	c.schemaBeforeDeleteTable = f
+	return c
+}
+
 func (c *Query)TableEngine(name string)*Query{
 	c.tableEngine = name
 	return c
@@ -210,11 +236,23 @@ func (c *Query)TableEngine(name string)*Query{
 
 func (c *Query)CreateTable(name string){
 	sqlRequest := fmt.Sprintf("CREATE TABLE `%s` (%s)ENGINE=%s", name, c.getColumnsTable(), c.tableEngine)
+	if c.schemaAfterCreateTable != nil {
+		c.schemaAfterCreateTable(c)
+	}
 	c.sqlRequest(sqlRequest)
+	if c.schemaBeforeCreateTable != nil {
+		c.schemaBeforeCreateTable(c)
+	}
 }
 func (c *Query)CreateTableIfNotExist(name string){
 	sqlRequest := fmt.Sprintf("CREATE TABLE IF NOT EXISTS `%s` (%s)ENGINE=%s", name, c.getColumnsTable(), c.tableEngine)
+	if c.schemaAfterCreateTable != nil {
+		c.schemaAfterCreateTable(c)
+	}
 	c.sqlRequest(sqlRequest)
+	if c.schemaBeforeCreateTable != nil {
+		c.schemaBeforeCreateTable(c)
+	}
 }
 
 func (c *Query)getColumnsTable()string{
@@ -236,12 +274,24 @@ func (c *Query)getColumnsTable()string{
 
 func (c *Query)DropTable(tables ...string){
 	sqlRequest := fmt.Sprintf("DROP TABLE `%s`", strings.Join(tables, "`, `"))
+	if c.schemaAfterDeleteTable != nil {
+		c.schemaAfterDeleteTable(c)
+	}
 	c.sqlRequest(sqlRequest)
+	if c.schemaBeforeDeleteTable != nil {
+		c.schemaBeforeDeleteTable(c)
+	}
 }
 
 func (c *Query)DropTableIfExists(tables ...string){
 	sqlRequest := fmt.Sprintf("DROP TABLE IF EXISTS `%s`", strings.Join(tables, "`, `"))
+	if c.schemaAfterDeleteTable != nil {
+		c.schemaAfterDeleteTable(c)
+	}
 	c.sqlRequest(sqlRequest)
+	if c.schemaBeforeDeleteTable != nil {
+		c.schemaBeforeDeleteTable(c)
+	}
 }
 
 func (c *Query)ShowSqlInConsole()*Query{
