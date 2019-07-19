@@ -86,9 +86,9 @@ func (c *Schema)ColumnTime(precision float32)*Schema{
 	data.column[SchemaTypeTime]=precision
 	return data
 }
-func (c *Schema)ColumnTimestamp(precision float32)*Schema{
+func (c *Schema)ColumnTimestamp(def string)*Schema{
 	data := c.Transform()
-	data.column[SchemaTypeTimeStamp] = precision
+	data.column[SchemaTypeTimeStamp] = def
 	return data
 }
 func (c *Schema)ColumnTinyint(length int)*Schema{
@@ -213,7 +213,7 @@ func (c *Schema)returnColumn()(string, string, string){
 			columnType = "DATETIME"
 		case SchemaTypeTimeStamp:
 			columnType = "TIMESTAMP"
-			columnType = fmt.Sprintf("TIMESTAMP %v", value)
+			columnDefault = fmt.Sprintf("DEFAULT %v", value)
 
 		case SchemaTypeTime:
 			columnType = "TIME"
