@@ -205,6 +205,7 @@ func (c *Query)TableEngine(name string)*Query{
 
 func (c *Query)CreateTable(name string){
 	sqlRequest := fmt.Sprintf("CREATE TABLE %s (%s)ENGINE=%s", name, c.getColumnsTable(), c.tableEngine)
+	fmt.Println(sqlRequest)
 	c.sqlRequest(sqlRequest)
 }
 func (c *Query)CreateTableIfNotExist(name string){
