@@ -169,14 +169,12 @@ func (c *Schema)returnColumn()(string, string, string){
 		switch key {
 		case SchemaTypePk:
 			columnPrimaryKey = fmt.Sprintf("%v", c.column[SchemaName])
-			columnIndex = fmt.Sprintf("%v", c.column[SchemaName])
 			columnType = fmt.Sprintf("INT(%v)", value)
 			columnNull = "NOT NULL"
 			columnAutoIncrement = "AUTO_INCREMENT"
 
 		case SchemaTypeBigPk:
 			columnPrimaryKey = fmt.Sprintf("%v", c.column[SchemaName])
-			columnIndex = fmt.Sprintf("%v", c.column[SchemaName])
 			columnType = fmt.Sprintf("BIGINT(%v)", value)
 			columnNull = "NOT NULL"
 			columnAutoIncrement = "AUTO_INCREMENT"
