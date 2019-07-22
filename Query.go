@@ -273,7 +273,7 @@ func (c *Query)getColumnsTable()string{
 		sqlRequestBuilder = append(sqlRequestBuilder, fmt.Sprintf("PRIMARY KEY (`%s`)", c.schemaPrimaryKey))
 	}
 	if len(c.schemaIndex)>0{
-		sqlRequestBuilder = append(sqlRequestBuilder, fmt.Sprintf("INDEX (`%s`)", strings.Join(c.schemaIndex, "`, `")))
+		sqlRequestBuilder = append(sqlRequestBuilder, strings.Join(c.schemaIndex, ", "))
 	}
 	return strings.Join(sqlRequestBuilder, ", ")
 }
