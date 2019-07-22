@@ -165,7 +165,6 @@ func (c *Schema)returnColumn()(string, string, string){
 	//Init
 	columnNull = "NULL"
 
-	fmt.Println(c.column)
 	for key, value := range c.column {
 		switch key {
 		case SchemaTypePk:
