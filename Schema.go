@@ -246,7 +246,12 @@ func (c *Schema)returnColumn()(string, string, string){
 			columnUnsigned = true
 
 		case SchemaIndex:
-			columnIndex = fmt.Sprintf("%v", c.column[SchemaName])
+			if _, ok := c.column[SchemaIndexName]; ok {
+				columnIndex = fmt.Sprintf("INDEX `%v` (`%v`)", c.column[SchemaIndexName], c.column[SchemaName])
+			}else{
+				columnIndex = fmt.Sprintf("INDEX `%v` (`%v`)", c.column[SchemaName], c.column[SchemaName])
+			}
+
 		}
 
 	}
@@ -279,10 +284,6 @@ func (c *Schema)returnColumn()(string, string, string){
 
 	if len(columnComment)>0 {
 		sqlText = append(sqlText, columnComment)
-	}
-
-	if _, ok := c.column[SchemaIndexName]; ok {
-		columnIndex = fmt.Sprintf("%v", fmt.Sprintf("%v", c.column[SchemaIndexName]))
 	}
 
 	return strings.Join(sqlText, " "), columnPrimaryKey, columnIndex

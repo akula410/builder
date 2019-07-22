@@ -238,7 +238,7 @@ func (c *Query)CreateTable(name string){
 	if c.schemaAfterCreateTable != nil {
 		c.schemaAfterCreateTable(c)
 	}
-	
+
 	sqlRequest := fmt.Sprintf("CREATE TABLE `%s` (%s)ENGINE=%s", name, c.getColumnsTable(), c.tableEngine)
 
 	c.sqlRequest(sqlRequest)
