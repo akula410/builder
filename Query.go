@@ -235,21 +235,27 @@ func (c *Query)TableEngine(name string)*Query{
 }
 
 func (c *Query)CreateTable(name string){
-	sqlRequest := fmt.Sprintf("CREATE TABLE `%s` (%s)ENGINE=%s", name, c.getColumnsTable(), c.tableEngine)
 	if c.schemaAfterCreateTable != nil {
 		c.schemaAfterCreateTable(c)
 	}
+	
+	sqlRequest := fmt.Sprintf("CREATE TABLE `%s` (%s)ENGINE=%s", name, c.getColumnsTable(), c.tableEngine)
+
 	c.sqlRequest(sqlRequest)
+
 	if c.schemaBeforeCreateTable != nil {
 		c.schemaBeforeCreateTable(c)
 	}
 }
 func (c *Query)CreateTableIfNotExist(name string){
-	sqlRequest := fmt.Sprintf("CREATE TABLE IF NOT EXISTS `%s` (%s)ENGINE=%s", name, c.getColumnsTable(), c.tableEngine)
 	if c.schemaAfterCreateTable != nil {
 		c.schemaAfterCreateTable(c)
 	}
+
+	sqlRequest := fmt.Sprintf("CREATE TABLE IF NOT EXISTS `%s` (%s)ENGINE=%s", name, c.getColumnsTable(), c.tableEngine)
+
 	c.sqlRequest(sqlRequest)
+
 	if c.schemaBeforeCreateTable != nil {
 		c.schemaBeforeCreateTable(c)
 	}
@@ -273,22 +279,28 @@ func (c *Query)getColumnsTable()string{
 }
 
 func (c *Query)DropTable(tables ...string){
-	sqlRequest := fmt.Sprintf("DROP TABLE `%s`", strings.Join(tables, "`, `"))
 	if c.schemaAfterDeleteTable != nil {
 		c.schemaAfterDeleteTable(c)
 	}
+
+	sqlRequest := fmt.Sprintf("DROP TABLE `%s`", strings.Join(tables, "`, `"))
+
 	c.sqlRequest(sqlRequest)
+
 	if c.schemaBeforeDeleteTable != nil {
 		c.schemaBeforeDeleteTable(c)
 	}
 }
 
 func (c *Query)DropTableIfExists(tables ...string){
-	sqlRequest := fmt.Sprintf("DROP TABLE IF EXISTS `%s`", strings.Join(tables, "`, `"))
 	if c.schemaAfterDeleteTable != nil {
 		c.schemaAfterDeleteTable(c)
 	}
+
+	sqlRequest := fmt.Sprintf("DROP TABLE IF EXISTS `%s`", strings.Join(tables, "`, `"))
+
 	c.sqlRequest(sqlRequest)
+
 	if c.schemaBeforeDeleteTable != nil {
 		c.schemaBeforeDeleteTable(c)
 	}
