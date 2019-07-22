@@ -187,9 +187,9 @@ func (c *Query) AddColumn(columns ...*Schema) *Query{
 		}
 	}
 
-	if c.schemaColumns != nil && len(sqlColumn)>0 {
+	if len(c.schemaColumns) != 0 && len(sqlColumn)>0 {
 		c.schemaColumns = append(c.schemaColumns, sqlColumn...)
-	}else if c.schemaColumns == nil && len(sqlColumn)>0{
+	}else if len(c.schemaColumns) == 0 && len(sqlColumn)>0{
 		c.schemaColumns = make([]string, 0)
 		c.schemaColumns = append(c.schemaColumns, sqlColumn...)
 	}
@@ -198,9 +198,9 @@ func (c *Query) AddColumn(columns ...*Schema) *Query{
 		c.schemaPrimaryKey = sqlPrimaryKey
 	}
 
-	if c.schemaIndex != nil && len(sqlColumnIndex)>0 {
+	if len(c.schemaIndex) != 0 && len(sqlColumnIndex)>0 {
 		c.schemaIndex = append(c.schemaIndex, sqlColumnIndex...)
-	}else if c.schemaIndex == nil && len(sqlColumnIndex)>0{
+	}else if len(c.schemaIndex) == 0 && len(sqlColumnIndex)>0{
 		c.schemaIndex = make([]string, 0)
 		c.schemaIndex = append(c.schemaIndex, sqlColumnIndex...)
 	}
