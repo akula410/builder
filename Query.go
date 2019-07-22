@@ -246,6 +246,8 @@ func (c *Query)CreateTable(name string){
 	if c.schemaBeforeCreateTable != nil {
 		c.schemaBeforeCreateTable(c)
 	}
+
+	c.flushSchema()
 }
 func (c *Query)CreateTableIfNotExist(name string){
 	if c.schemaAfterCreateTable != nil {
@@ -259,6 +261,8 @@ func (c *Query)CreateTableIfNotExist(name string){
 	if c.schemaBeforeCreateTable != nil {
 		c.schemaBeforeCreateTable(c)
 	}
+
+	c.flushSchema()
 }
 
 func (c *Query)getColumnsTable()string{
@@ -276,6 +280,13 @@ func (c *Query)getColumnsTable()string{
 		sqlRequestBuilder = append(sqlRequestBuilder, strings.Join(c.schemaIndex, ", "))
 	}
 	return strings.Join(sqlRequestBuilder, ", ")
+}
+
+func (c *Query)flushSchema(){
+	c.schemaColumns = nil
+	c.schemaIndex = nil
+	c.schemaPrimaryKey = ""
+	c.scriptToConsole = false
 }
 
 func (c *Query)DropTable(tables ...string){
