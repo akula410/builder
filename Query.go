@@ -25,6 +25,8 @@ type Query struct {
 	schemaAfterDeleteTable func(*Query)
 	schemaBeforeDeleteTable func(*Query)
 
+	schemaTableName string
+
 	tableEngine string
 
 	scriptToConsole bool
@@ -235,6 +237,7 @@ func (c *Query)TableEngine(name string)*Query{
 }
 
 func (c *Query)CreateTable(name string){
+	c.schemaTableName = name
 	if c.schemaAfterCreateTable != nil {
 		c.schemaAfterCreateTable(c)
 	}
@@ -250,6 +253,7 @@ func (c *Query)CreateTable(name string){
 	c.flushSchema()
 }
 func (c *Query)CreateTableIfNotExist(name string){
+	c.schemaTableName = name
 	if c.schemaAfterCreateTable != nil {
 		c.schemaAfterCreateTable(c)
 	}
@@ -285,8 +289,15 @@ func (c *Query)getColumnsTable()string{
 func (c *Query)flushSchema(){
 	c.schemaColumns = nil
 	c.schemaIndex = nil
-	c.schemaPrimaryKey = ""
 	c.scriptToConsole = false
+}
+
+func (c *Query)GetTable()string{
+	return c.schemaTableName
+}
+
+func (c *Query)GetPrimaryKey()string{
+	return c.schemaPrimaryKey
 }
 
 func (c *Query)DropTable(tables ...string){
