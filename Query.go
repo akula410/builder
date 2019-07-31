@@ -173,7 +173,7 @@ func (c *Query) Decr(data ...interface{}) *Query{
 	return c
 }
 
-func (c *Query) OrderBy(direction string, order ...[]string) *Query{
+func (c *Query) OrderBy(direction string, order ...string) *Query{
 	sqlSlice := make([]string, 0)
 	for _, value := range order {
 		sqlSlice = append(sqlSlice, c.mysqlRealEscapeString(value))
@@ -182,7 +182,7 @@ func (c *Query) OrderBy(direction string, order ...[]string) *Query{
 	return c
 }
 
-func (c *Query) GroupBy(group ...[]string) *Query{
+func (c *Query) GroupBy(group ...string) *Query{
 	for _, value := range group {
 		c.dataForBuilding = append(c.dataForBuilding, c.trf(GroupBy, c.mysqlRealEscapeString(value)))
 	}
