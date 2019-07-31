@@ -23,6 +23,11 @@ const Decr = 20
 const Columns = 21
 const ColumnPrimaryKey = 22
 const ColumnsIndex = 23
+const Limit = 24
+const Offset = 25
+const OrderBy = 26
+const GroupBy = 27
+
 
 
 const SchemaTypePk        = "pk"
@@ -61,4 +66,7 @@ const ConfigUpdateCurrentTimestamp = "CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMEST
 const CHARSET_UTF8 = "utf8"
 
 const COLLATE_UTF8_GENERAL_CI = "utf8_general_ci"
+
+const ASC = "ASC"
+const DESC = "DESC"
 

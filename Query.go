@@ -173,6 +173,32 @@ func (c *Query) Decr(data ...interface{}) *Query{
 	return c
 }
 
+func (c *Query) OrderBy(direction string, order ...[]string) *Query{
+	sqlSlice := make([]string, 0)
+	for _, value := range order {
+		sqlSlice = append(sqlSlice, c.mysqlRealEscapeString(value))
+	}
+	c.dataForBuilding = append(c.dataForBuilding, c.trf(OrderBy, fmt.Sprintf("%s %s", strings.Join(sqlSlice, ", "), direction)))
+	return c
+}
+
+func (c *Query) GroupBy(group ...[]string) *Query{
+	for _, value := range group {
+		c.dataForBuilding = append(c.dataForBuilding, c.trf(GroupBy, c.mysqlRealEscapeString(value)))
+	}
+	return c
+}
+
+func (c *Query) Limit(count string) *Query{
+	c.dataForBuilding = append(c.dataForBuilding, c.trf(Limit, count))
+	return c
+}
+
+func (c *Query) Offset(count string) *Query{
+	c.dataForBuilding = append(c.dataForBuilding, c.trf(Offset, count))
+	return c
+}
+
 func (c *Query) AddColumn(columns ...*Schema) *Query{
 	sqlColumn := make([]string, 0, len(columns))
 	var sqlPrimaryKey string
@@ -357,6 +383,10 @@ func (c *Query) Build() string{
 	var FromSlice         []string
 	var JoinSlice         []string
 	var WhereSlice        []string
+	var OrderBySlice =    make([]string, 0)
+	var GroupBySlice =    make([]string, 0)
+	var LimitSlice          string
+	var OffsetSlice         string
 	var UpdateSlice         string
 	var UpdateParamsSlice []string
 
@@ -437,6 +467,14 @@ func (c *Query) Build() string{
 				UpdateParamsSlice = append(UpdateParamsSlice, fmt.Sprintf(" %s = %s+1 ", value, value))
 			case Decr:
 				UpdateParamsSlice = append(UpdateParamsSlice, fmt.Sprintf(" %s = %s-1 ", value, value))
+			case OrderBy:
+				OrderBySlice = append(OrderBySlice, fmt.Sprintf("%v", value))
+			case GroupBy:
+				GroupBySlice = append(GroupBySlice, fmt.Sprintf("%v", value))
+			case Limit:
+				LimitSlice = fmt.Sprintf(" LIMIT %v", value)
+			case Offset:
+				OffsetSlice = fmt.Sprintf(" OFFSET %v", value)
 			}
 		}
 	}
@@ -460,6 +498,22 @@ func (c *Query) Build() string{
 	if len(WhereSlice)>0 {
 
 		sqlRequest += fmt.Sprintf(" WHERE %s", strings.Join(c.mdfWhere(WhereSlice), " "))
+	}
+
+	if len(GroupBySlice)>0 {
+		sqlRequest += fmt.Sprintf(" GROUP BY %s", strings.Join(GroupBySlice, ", "))
+	}
+
+	if len(OrderBySlice)>0 {
+		sqlRequest += fmt.Sprintf(" ORDER BY %s", strings.Join(OrderBySlice, ", "))
+	}
+
+	if len(LimitSlice)>0 {
+		sqlRequest += fmt.Sprintf(" LIMIT %s", LimitSlice)
+	}
+
+	if len(OffsetSlice)>0 {
+		sqlRequest += fmt.Sprintf(" OFFSET %s", OffsetSlice)
 	}
 
 	if len(c.alias)>0 {
