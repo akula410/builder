@@ -70,6 +70,12 @@ func (c *Query) From(table string) *Query{
 	return c
 }
 
+func (c *Query) Between(field string, value1 interface{}, value2 interface{}){
+	c.dataForBuilding = append(c.dataForBuilding, c.trf(Field, field))
+	c.dataForBuilding = append(c.dataForBuilding, c.trf(BetweenValue1, value1))
+	c.dataForBuilding = append(c.dataForBuilding, c.trf(BetweenValue2, value2))
+}
+
 func (c *Query) Where(field string, value interface{}) *Query{
 	c.dataForBuilding = append(c.dataForBuilding, c.trf(Field, field))
 	c.dataForBuilding = append(c.dataForBuilding, c.trf(AND, value))
@@ -408,6 +414,11 @@ func (c *Query) Build() string{
 				field = fmt.Sprintf("%v", c.mysqlRealEscapeString(value))
 			}
 				WhereSlice = append(WhereSlice, field)
+
+			case BetweenValue1:
+				WhereSlice = append(WhereSlice, fmt.Sprintf(" BETWEEN '%s'", c.mysqlRealEscapeString(value)))
+			case BetweenValue2:
+				WhereSlice = append(WhereSlice, fmt.Sprintf(" AND '%s'", c.mysqlRealEscapeString(value)), "AND")
 
 			case AND:
 				if value==nil {
