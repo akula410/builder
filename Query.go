@@ -483,9 +483,9 @@ func (c *Query) Build() string{
 			case GroupBy:
 				GroupBySlice = append(GroupBySlice, fmt.Sprintf("%v", value))
 			case Limit:
-				LimitSlice = fmt.Sprintf(" LIMIT %v", value)
+				LimitSlice = fmt.Sprintf("%v", value)
 			case Offset:
-				OffsetSlice = fmt.Sprintf(" OFFSET %v", value)
+				OffsetSlice = fmt.Sprintf("%v", value)
 			}
 		}
 	}
