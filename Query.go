@@ -77,14 +77,22 @@ func (c *Query) Between(field string, value1 interface{}, value2 interface{}){
 }
 
 func (c *Query) Where(field string, value interface{}) *Query{
-	c.dataForBuilding = append(c.dataForBuilding, c.trf(Field, field))
-	c.dataForBuilding = append(c.dataForBuilding, c.trf(AND, value))
+	if value == false{
+		c.dataForBuilding = append(c.dataForBuilding, c.trf(MdfAND, field))
+	}else{
+		c.dataForBuilding = append(c.dataForBuilding, c.trf(Field, field))
+		c.dataForBuilding = append(c.dataForBuilding, c.trf(AND, value))
+	}
 	return c
 }
 
 func (c *Query) WhereOr(field string, value interface{}) *Query{
-	c.dataForBuilding = append(c.dataForBuilding, c.trf(Field, field))
-	c.dataForBuilding = append(c.dataForBuilding, c.trf(OR, value))
+	if value == false{
+		c.dataForBuilding = append(c.dataForBuilding, c.trf(MdfOR, field))
+	}else{
+		c.dataForBuilding = append(c.dataForBuilding, c.trf(Field, field))
+		c.dataForBuilding = append(c.dataForBuilding, c.trf(OR, value))
+	}
 	return c
 }
 
@@ -429,12 +437,20 @@ func (c *Query) Build() string{
 
 				WhereSlice = append(WhereSlice, "AND")
 
+			case MdfAND:
+				WhereSlice = append(WhereSlice, fmt.Sprintf("%v", value))
+				WhereSlice = append(WhereSlice, "AND")
+
 			case OR:
 				if value==nil {
 					WhereSlice = append(WhereSlice, "IS NULL ")
 				}else{
 					WhereSlice = append(WhereSlice, fmt.Sprintf("='%v'", c.mysqlRealEscapeString(value)))
 				}
+				WhereSlice = append(WhereSlice, "OR")
+
+			case MdfOR:
+				WhereSlice = append(WhereSlice, fmt.Sprintf("%v", value))
 				WhereSlice = append(WhereSlice, "OR")
 
 			case IN:

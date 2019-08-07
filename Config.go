@@ -29,6 +29,8 @@ const OrderBy = 26
 const GroupBy = 27
 const BetweenValue1 = 28
 const BetweenValue2 = 29
+const MdfAND = 30
+const MdfOR = 31
 
 
 
