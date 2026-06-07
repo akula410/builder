@@ -1072,6 +1072,62 @@ return tx.Commit()
 
 ---
 
+## Examples
+
+Runnable examples are in the [`examples/`](examples/) directory.
+Each example is a standalone program that can be run with `go run`.
+
+```
+examples/
+├── 01_select/         SELECT, WHERE, ORDER BY, LIMIT/OFFSET
+├── 02_insert/         INSERT, bulk insert, ON DUPLICATE KEY UPDATE
+├── 03_update/         UPDATE with Set, Where, Limit
+├── 04_delete/         Safe DELETE with WHERE and LIMIT
+├── 05_conditions/     All condition helpers (Eq, Like, In, Between, And/Or, …)
+├── 06_join/           Safe typed JOIN (JoinOn/OnEq), LEFT JOIN, raw JOIN
+├── 07_json/           MySQL 8 JSON helpers (JSONExtract, JSONEq, JSONContains)
+├── 08_subqueries/     WHERE IN subquery, EXISTS, FROM subquery, SubqueryColumn
+├── 09_cte/            WITH, multiple CTEs, WITH RECURSIVE
+├── 10_schema/         DDL: CREATE TABLE, ALTER TABLE, indexes, FK, Migration
+├── 11_transactions/   db.BeginTx, NewExecutor(tx), commit/rollback
+├── 12_context_timeout/ context.WithTimeout per query
+├── 13_debug_sql/      Debug, DebugSQLWithConfig, SafeLogQuery (no DB needed)
+└── 14_high_load/      Pool config, prepared statements, db.Stats()
+```
+
+All runnable examples connect to MySQL via [`github.com/akula410/connect/v2`](https://github.com/akula410/connect):
+
+```go
+import (
+    sqlbuilder "github.com/akula410/builder/v2"
+    "github.com/akula410/connect/v2"
+)
+
+cfg := connect.DefaultConfig()
+cfg.User = "root"
+cfg.Password = os.Getenv("MYSQL_PASSWORD")
+cfg.DBName = "builder_example"
+
+db, err := connect.NewMySQLContext(ctx, cfg)
+if err != nil { log.Fatal(err) }
+defer db.Close()
+
+exec := sqlbuilder.NewExecutor(db)
+```
+
+Run any example:
+
+```bash
+MYSQL_HOST=127.0.0.1 MYSQL_PORT=3306 \
+MYSQL_USER=root MYSQL_PASSWORD=secret \
+MYSQL_DATABASE=builder_example \
+go run ./examples/01_select
+```
+
+See [`examples/README.md`](examples/README.md) for the full list and instructions.
+
+---
+
 ## TODO / Roadmap
 
 - Migration history table + state tracking (sequential runner is already provided via `RunUp`/`RunDown`)
