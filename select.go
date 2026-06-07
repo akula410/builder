@@ -168,7 +168,7 @@ func (b *SelectBuilder) Where(cond Condition) *SelectBuilder {
 	return b
 }
 
-// addJoin appends a join clause.
+// addJoin appends a join clause with a raw ON expression.
 func (b *SelectBuilder) addJoin(kind, tableExpr, on string) *SelectBuilder {
 	q, err := parseTableExpr(tableExpr)
 	if err != nil {
@@ -179,16 +179,94 @@ func (b *SelectBuilder) addJoin(kind, tableExpr, on string) *SelectBuilder {
 	return b
 }
 
-// Join adds an INNER JOIN.
+// addSafeJoin appends a join clause with a validated, type-safe ON condition.
+func (b *SelectBuilder) addSafeJoin(kind, tableExpr string, cond OnCondition) *SelectBuilder {
+	q, err := parseTableExpr(tableExpr)
+	if err != nil {
+		b.setErr(err)
+		return b
+	}
+	onSQL, err := cond.buildOnCondition()
+	if err != nil {
+		b.setErr(err)
+		return b
+	}
+	b.joins = append(b.joins, joinEntry{kind: kind, table: q, on: onSQL})
+	return b
+}
+
+// JoinOn adds an INNER JOIN with a type-safe, validated ON condition.
+// Column references are validated and quoted; no raw SQL is accepted.
+//
+// Example:
+//
+//	JoinOn("orders o", OnEq("o.user_id", "u.id"))
+func (b *SelectBuilder) JoinOn(tableExpr string, cond OnCondition) *SelectBuilder {
+	return b.addSafeJoin("INNER JOIN", tableExpr, cond)
+}
+
+// LeftJoinOn adds a LEFT JOIN with a type-safe, validated ON condition.
+func (b *SelectBuilder) LeftJoinOn(tableExpr string, cond OnCondition) *SelectBuilder {
+	return b.addSafeJoin("LEFT JOIN", tableExpr, cond)
+}
+
+// RightJoinOn adds a RIGHT JOIN with a type-safe, validated ON condition.
+func (b *SelectBuilder) RightJoinOn(tableExpr string, cond OnCondition) *SelectBuilder {
+	return b.addSafeJoin("RIGHT JOIN", tableExpr, cond)
+}
+
+// InnerJoinOn adds an INNER JOIN with a type-safe, validated ON condition (alias for JoinOn).
+func (b *SelectBuilder) InnerJoinOn(tableExpr string, cond OnCondition) *SelectBuilder {
+	return b.addSafeJoin("INNER JOIN", tableExpr, cond)
+}
+
+// JoinRaw adds an INNER JOIN with a raw ON expression.
 //
 // WARNING: The on parameter is embedded into SQL as-is without validation or escaping.
 // Only pass known, trusted column comparison expressions (e.g. "o.user_id = u.id").
+// Never pass user-controlled input as the on parameter — it is a SQL injection risk.
+// Prefer JoinOn with OnEq / OnAnd helpers instead.
+func (b *SelectBuilder) JoinRaw(tableExpr, on string) *SelectBuilder {
+	return b.addJoin("INNER JOIN", tableExpr, on)
+}
+
+// LeftJoinRaw adds a LEFT JOIN with a raw ON expression.
+//
+// WARNING: The on parameter is embedded into SQL as-is. Prefer LeftJoinOn instead.
+func (b *SelectBuilder) LeftJoinRaw(tableExpr, on string) *SelectBuilder {
+	return b.addJoin("LEFT JOIN", tableExpr, on)
+}
+
+// RightJoinRaw adds a RIGHT JOIN with a raw ON expression.
+//
+// WARNING: The on parameter is embedded into SQL as-is. Prefer RightJoinOn instead.
+func (b *SelectBuilder) RightJoinRaw(tableExpr, on string) *SelectBuilder {
+	return b.addJoin("RIGHT JOIN", tableExpr, on)
+}
+
+// InnerJoinRaw adds an INNER JOIN with a raw ON expression.
+//
+// WARNING: The on parameter is embedded into SQL as-is. Prefer InnerJoinOn instead.
+func (b *SelectBuilder) InnerJoinRaw(tableExpr, on string) *SelectBuilder {
+	return b.addJoin("INNER JOIN", tableExpr, on)
+}
+
+// Join adds an INNER JOIN with a raw ON expression.
+//
+// Deprecated: Use JoinOn with OnEq / OnAnd helpers for type-safe column-to-column comparisons.
+// For raw ON expressions use JoinRaw explicitly.
+//
+// WARNING: The on parameter is embedded into SQL as-is without validation or escaping.
+// Only pass known, trusted column comparison expressions.
 // Never pass user-controlled input as the on parameter — it is a SQL injection risk.
 func (b *SelectBuilder) Join(tableExpr, on string) *SelectBuilder {
 	return b.addJoin("INNER JOIN", tableExpr, on)
 }
 
-// LeftJoin adds a LEFT JOIN.
+// LeftJoin adds a LEFT JOIN with a raw ON expression.
+//
+// Deprecated: Use LeftJoinOn with OnEq / OnAnd helpers for type-safe column-to-column comparisons.
+// For raw ON expressions use LeftJoinRaw explicitly.
 //
 // WARNING: The on parameter is embedded into SQL as-is without validation or escaping.
 // Only pass known, trusted column comparison expressions.
@@ -197,7 +275,10 @@ func (b *SelectBuilder) LeftJoin(tableExpr, on string) *SelectBuilder {
 	return b.addJoin("LEFT JOIN", tableExpr, on)
 }
 
-// RightJoin adds a RIGHT JOIN.
+// RightJoin adds a RIGHT JOIN with a raw ON expression.
+//
+// Deprecated: Use RightJoinOn with OnEq / OnAnd helpers for type-safe column-to-column comparisons.
+// For raw ON expressions use RightJoinRaw explicitly.
 //
 // WARNING: The on parameter is embedded into SQL as-is without validation or escaping.
 // Only pass known, trusted column comparison expressions.
@@ -206,7 +287,10 @@ func (b *SelectBuilder) RightJoin(tableExpr, on string) *SelectBuilder {
 	return b.addJoin("RIGHT JOIN", tableExpr, on)
 }
 
-// InnerJoin adds an INNER JOIN (alias for Join).
+// InnerJoin adds an INNER JOIN with a raw ON expression.
+//
+// Deprecated: Use InnerJoinOn with OnEq / OnAnd helpers for type-safe column-to-column comparisons.
+// For raw ON expressions use InnerJoinRaw explicitly.
 //
 // WARNING: The on parameter is embedded into SQL as-is without validation or escaping.
 // Only pass known, trusted column comparison expressions.

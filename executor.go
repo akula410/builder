@@ -43,14 +43,40 @@ func (e *Executor) QueryContext(ctx context.Context, b QueryBuilder) (*sql.Rows,
 	return e.db.QueryContext(ctx, query, args...)
 }
 
+// QueryRowContextErr builds the query and calls db.QueryRowContext.
+// Unlike QueryRowContext, build errors are returned explicitly as the second return value.
+//
+// Returns (nil, err) if Build() fails — the database is never called in this case.
+// Returns (row, nil) on a successful build; the row may still return an error on Scan().
+//
+// Example:
+//
+//	row, err := exec.QueryRowContextErr(ctx,
+//	    sqlbuilder.Select("id", "name").From("users").Where(sqlbuilder.Eq("id", userID)),
+//	)
+//	if err != nil { /* build error */ return err }
+//	var id int; var name string
+//	if err := row.Scan(&id, &name); err != nil { return err }
+func (e *Executor) QueryRowContextErr(ctx context.Context, b QueryBuilder) (*sql.Row, error) {
+	query, args, err := b.Build()
+	if err != nil {
+		return nil, fmt.Errorf("sqlbuilder: build: %w", err)
+	}
+	return e.db.QueryRowContext(ctx, query, args...), nil
+}
+
 // QueryRowContext builds the query and calls db.QueryRowContext.
+//
+// Deprecated: Use QueryRowContextErr instead. QueryRowContext silently masks build errors
+// by executing a dummy query; the caller cannot distinguish a build failure from a
+// real database error when calling row.Scan(). QueryRowContextErr returns build errors
+// explicitly as the second return value.
 func (e *Executor) QueryRowContext(ctx context.Context, b QueryBuilder) *sql.Row {
 	query, args, err := b.Build()
 	if err != nil {
-		// *sql.Row carries an error; create a failing row via a known-bad query.
-		// The caller checks row.Scan() which will return the original build error.
-		row := e.db.QueryRowContext(ctx, "SELECT /* build error: "+err.Error()+" */ NULL WHERE 1=0")
-		return row
+		// Mask the build error behind a failing row for backward compatibility.
+		// Use QueryRowContextErr to receive the build error explicitly.
+		return e.db.QueryRowContext(ctx, "SELECT NULL WHERE 1=0 /* sqlbuilder: build error */")
 	}
 	return e.db.QueryRowContext(ctx, query, args...)
 }

@@ -100,6 +100,43 @@ debug, err := sqlbuilder.Debug(query)
 
 ---
 
+## Thread-safety
+
+Builder instances are **mutable** and are **not safe for concurrent use**.
+
+Do not share the same builder instance between goroutines unless you protect it with
+external synchronization. Reusing a mutable builder from multiple goroutines is a data race.
+
+**Correct approach — create a new builder per query / request / goroutine:**
+
+```go
+func handleRequest(userID int) error {
+    q := sqlbuilder.Select("id", "name").
+        From("users").
+        Where(sqlbuilder.Eq("id", userID))
+    // q is local to this goroutine — safe
+    rows, err := exec.QueryContext(ctx, q)
+    // ...
+}
+```
+
+**Do NOT do this — shared mutable builder:**
+
+```go
+// WRONG: global shared builder — data race under concurrent use
+var base = sqlbuilder.Select("id").From("users")
+
+func handleRequest(status string) {
+    base.Where(sqlbuilder.Eq("status", status)) // DATA RACE
+}
+```
+
+**After Build():** the returned `sql string` and `args []any` are plain Go values. They can be
+passed between goroutines freely as long as `args` contains only immutable values (strings,
+integers, etc.) and you do not mutate the slice itself.
+
+---
+
 ## SELECT
 
 ```go
@@ -253,18 +290,74 @@ sqlbuilder.And(
 
 ## JOIN
 
+### Safe JOIN API (recommended)
+
+Use `JoinOn` / `LeftJoinOn` / `RightJoinOn` / `InnerJoinOn` with typed ON condition helpers.
+Column references are validated against the identifier whitelist and backtick-quoted.
+No raw SQL is accepted; no value placeholders are generated.
+
 ```go
-.Join("orders o", "o.user_id = u.id")         // INNER JOIN
-.LeftJoin("orders o", "o.user_id = u.id")     // LEFT JOIN
-.RightJoin("orders o", "o.user_id = u.id")    // RIGHT JOIN
-.InnerJoin("orders o", "o.user_id = u.id")    // INNER JOIN (alias)
+// INNER JOIN with a safe ON condition
+sqlbuilder.Select("u.id", "u.name", "o.total").
+    From("users u").
+    JoinOn("orders o", sqlbuilder.OnEq("o.user_id", "u.id"))
+// INNER JOIN `orders` AS `o` ON `o`.`user_id` = `u`.`id`
+
+// LEFT JOIN
+sqlbuilder.Select("u.id", "u.name").
+    From("users u").
+    LeftJoinOn("orders o", sqlbuilder.OnEq("o.user_id", "u.id"))
+
+// Compound ON condition
+sqlbuilder.Select("u.id").
+    From("users u").
+    LeftJoinOn("orders o", sqlbuilder.OnAnd(
+        sqlbuilder.OnEq("o.user_id", "u.id"),
+        sqlbuilder.OnEq("o.status", "u.status"),
+    ))
+// ON (`o`.`user_id` = `u`.`id` AND `o`.`status` = `u`.`status`)
 ```
 
-> **WARNING — JOIN ON clause is raw SQL.**
-> The second argument (`on`) is embedded into the query as-is, without validation or escaping.
-> Only pass trusted, hardcoded column comparison expressions (e.g. `"o.user_id = u.id"`).
+**ON condition helpers:**
+
+| Function | SQL |
+|---|---|
+| `OnEq(left, right)` | `left = right` |
+| `OnNe(left, right)` | `left != right` |
+| `OnGt(left, right)` | `left > right` |
+| `OnGte(left, right)` | `left >= right` |
+| `OnLt(left, right)` | `left < right` |
+| `OnLte(left, right)` | `left <= right` |
+| `OnAnd(conds…)` | `(c1 AND c2 …)` |
+| `OnOr(conds…)` | `(c1 OR c2 …)` |
+
+Supported column formats: `column`, `table.column` (both parts validated and quoted).
+Three-part dotted identifiers (`db.table.column`) are not supported and return an error.
+
+### Raw JOIN API (use only for trusted, hardcoded ON expressions)
+
+```go
+.JoinRaw("orders o", "o.user_id = u.id")         // INNER JOIN — raw ON
+.LeftJoinRaw("orders o", "o.user_id = u.id")     // LEFT JOIN  — raw ON
+.RightJoinRaw("orders o", "o.user_id = u.id")    // RIGHT JOIN — raw ON
+.InnerJoinRaw("orders o", "o.user_id = u.id")    // INNER JOIN — raw ON (alias)
+```
+
+> **WARNING — raw JOIN ON clause is embedded into SQL as-is, without validation or escaping.**
+> Only pass hardcoded, trusted column comparison expressions (e.g. `"o.user_id = u.id"`).
 > Never pass user-controlled input as the `on` argument — it is a SQL injection risk.
 > To filter by a value, use a `Where` condition instead.
+
+### Deprecated raw variants (kept for backward compatibility)
+
+`Join`, `LeftJoin`, `RightJoin`, `InnerJoin` (raw `on string` parameter) remain functional
+but are deprecated. Prefer `JoinOn` / `LeftJoinOn` / `JoinRaw` / `LeftJoinRaw`.
+
+```go
+// Deprecated — use JoinRaw or JoinOn instead
+.Join("orders o", "o.user_id = u.id")
+.LeftJoin("orders o", "o.user_id = u.id")
+```
 
 ---
 
@@ -561,24 +654,41 @@ if err := migration.RunDown(ctx, exec); err != nil {
 exec := sqlbuilder.NewExecutor(db)   // *sql.DB
 exec := sqlbuilder.NewExecutor(tx)   // *sql.Tx
 
-// Execute
+// Execute (INSERT, UPDATE, DELETE)
 result, err := exec.ExecContext(ctx, query)
 
-// Query rows
+// Query multiple rows
 rows, err := exec.QueryContext(ctx, query)
+if err != nil { return err }
+defer rows.Close()
 
-// Single row
+// Single row — recommended: build error returned explicitly
+row, err := exec.QueryRowContextErr(ctx, query)
+if err != nil { return err }  // build error
+var id int
+if err := row.Scan(&id); err != nil { return err }  // DB / scan error
+
+// Single row — deprecated: build error is silently masked
 row := exec.QueryRowContext(ctx, query)
 
 // Build only (no execution)
 sql, args, err := sqlbuilder.ToSQL(query)
 ```
 
+### QueryRowContextErr vs QueryRowContext
+
+`QueryRowContext` (deprecated) masks build errors by executing a dummy query. The caller
+cannot distinguish a build failure from a real database error when calling `row.Scan()`.
+
+`QueryRowContextErr` returns the build error explicitly:
+- `(nil, err)` — Build() failed; the database is never called.
+- `(row, nil)` — Build() succeeded; call `row.Scan()` to read the result.
+
 ### Prepared Statements
 
 ```go
 stmt, args, err := exec.PrepareContext(ctx, query)
-if err != nil { ... }
+if err != nil { return err }
 defer stmt.Close()
 rows, err := stmt.QueryContext(ctx, args...)
 
@@ -758,15 +868,207 @@ All Raw APIs accept `args` with `?` placeholders. Never concatenate user input i
 
 ---
 
+## Using context (timeout / cancel)
+
+### SELECT with timeout
+
+```go
+ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+defer cancel()
+
+rows, err := exec.QueryContext(ctx,
+    sqlbuilder.Select("id", "name").
+        From("users").
+        Where(sqlbuilder.Eq("status", "active")),
+)
+if err != nil {
+    return err
+}
+defer rows.Close()
+
+for rows.Next() {
+    var id int
+    var name string
+    if err := rows.Scan(&id, &name); err != nil {
+        return err
+    }
+}
+return rows.Err()
+```
+
+### Single row with timeout and explicit build-error check
+
+```go
+ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+defer cancel()
+
+row, err := exec.QueryRowContextErr(ctx,
+    sqlbuilder.Select("id", "email").
+        From("users").
+        Where(sqlbuilder.Eq("id", userID)),
+)
+if err != nil {
+    return err  // build error — DB was never called
+}
+var id int
+var email string
+if err := row.Scan(&id, &email); err != nil {
+    return err  // DB / scan error
+}
+```
+
+### INSERT / UPDATE / DELETE with cancel
+
+```go
+ctx, cancel := context.WithCancel(context.Background())
+defer cancel()
+
+result, err := exec.ExecContext(ctx,
+    sqlbuilder.Update("users").
+        Set("status", "inactive").
+        Where(sqlbuilder.Eq("id", userID)),
+)
+if err != nil {
+    return err
+}
+```
+
+### Transaction with context
+
+```go
+ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+defer cancel()
+
+tx, err := db.BeginTx(ctx, nil)
+if err != nil {
+    return err
+}
+defer tx.Rollback()  // no-op after Commit
+
+exec := sqlbuilder.NewExecutor(tx)
+
+_, err = exec.ExecContext(ctx,
+    sqlbuilder.Update("accounts").
+        Set("balance", newBalance).
+        Where(sqlbuilder.Eq("id", accountID)),
+)
+if err != nil {
+    return err
+}
+
+return tx.Commit()
+```
+
+---
+
+## High-load usage
+
+### Connection pool
+
+The builder does not manage database connections. Configure the pool on `*sql.DB` directly:
+
+```go
+db.SetMaxOpenConns(50)          // maximum open connections to DB
+db.SetMaxIdleConns(25)          // keep up to 25 idle connections
+db.SetConnMaxLifetime(5 * time.Minute)  // recycle connections after 5 minutes
+db.SetConnMaxIdleTime(2 * time.Minute)  // close idle connections after 2 minutes
+```
+
+Tune these values based on your MySQL / MariaDB settings, workload, and infrastructure.
+Start conservative, then raise `MaxOpenConns` based on observed `max_used_connections` in MySQL
+and benchmark results. There is no universal "correct" value.
+
+### Prepared statements
+
+The builder generates SQL + args; it does not automatically use prepared statements.
+
+- For one-off queries: `QueryContext` / `ExecContext` are sufficient and simpler.
+- For the same parameterised query executed many times: use prepared statements to save
+  the parse/plan step on each execution.
+- One-shot prepare (prepare + execute + close) is often slower than a direct query.
+- Always close statements to return connections to the pool.
+
+```go
+// Manual lifecycle — reuse stmt across many calls
+stmt, args, err := exec.PrepareContext(ctx, query)
+if err != nil { return err }
+defer stmt.Close()
+
+rows, err := stmt.QueryContext(ctx, args...)
+```
+
+### Logging
+
+- Log the parameterised SQL template and args count, not the values:
+  ```go
+  log, _ := sqlbuilder.SafeLogQuery(query)
+  logger.Info("query", "sql", log.SQL, "args", log.ArgsCount, "duration", elapsed)
+  ```
+- Do not log `DebugSQL` output in production — it may contain personal data.
+- If you use `DebugSQLWithConfig`, always set `RedactFields` for sensitive columns
+  (`password`, `token`, `api_key`, etc.).
+- Include `duration`, `rows_affected`, `error`, and a trace/request ID in log entries.
+
+### Transactions
+
+```go
+tx, err := db.BeginTx(ctx, nil)
+if err != nil { return err }
+defer tx.Rollback()  // no-op after a successful Commit
+
+exec := sqlbuilder.NewExecutor(tx)
+
+_, err = exec.ExecContext(ctx, insertQuery)
+if err != nil { return err }
+
+_, err = exec.ExecContext(ctx, updateQuery)
+if err != nil { return err }
+
+return tx.Commit()
+```
+
+### Builder lifecycle
+
+- **Create one builder per query / request / goroutine.** Builders are mutable; reusing
+  them concurrently is a data race.
+- **Do not store builders in global variables.** A builder accumulates state; sharing it
+  across requests will corrupt SQL.
+- **You can cache a built SQL string** if the query template is fully static
+  (no dynamic columns, no dynamic WHERE), but args must always be assembled fresh per call.
+
+---
+
+## Compatibility
+
+| Database | Version | Status | Notes |
+|---|---|---:|---|
+| MySQL | 8.x | **Supported** | Primary target |
+| MySQL | 5.7 | Not guaranteed | JSON functions and some schema features require MySQL 8 |
+| MariaDB | 10.x / 11.x | Not guaranteed | SQL syntax is largely compatible but JSON and DDL details differ; not tested |
+| PostgreSQL | any | **Not supported** | Placeholder style (`$1`) and identifier quoting (`"`) differ from MySQL |
+| SQLite | any | **Not supported** | Different SQL dialect |
+
+**Notes:**
+
+- The library is designed and tested exclusively against MySQL 8.
+- MySQL 5.7 lacks `JSON_TABLE`, window functions, and several `JSON_*` functions used by the JSON helpers.
+- MariaDB differs in JSON function signatures and some DDL syntax. If you use MariaDB, verify
+  generated SQL manually before deploying.
+- PostgreSQL and SQLite use different placeholder styles and quoting conventions that are
+  incompatible with this builder's output.
+
+---
+
 ## Limitations (v0.2.0)
 
 - No migration history table or state tracking — `RunUp`/`RunDown` execute steps but do not record which migrations have been applied; implement tracking in your application layer.
-- JOIN `ON` conditions are raw strings (no validation or escaping); only pass hardcoded column comparisons, never user input.
 - `DebugSQL` redaction is best-effort based on SQL text pattern matching.
 - No UNION / INTERSECT / EXCEPT builder (use `RawQuery`).
 - No INSERT … SELECT builder (use `RawQuery`).
 - No per-query timeout configuration (use `context.WithTimeout`).
 - No EXPLAIN wrapper.
+- `QueryRowContext` is deprecated; use `QueryRowContextErr` to receive build errors explicitly.
+- Raw JOIN variants (`Join`, `LeftJoin`, etc.) are deprecated; use `JoinOn` / `JoinRaw`.
 
 ---
 
