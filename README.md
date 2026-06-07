@@ -22,13 +22,13 @@ Generates parameterised SQL using `?` placeholders and `[]any` args. Identifiers
 ## Installation
 
 ```bash
-go get github.com/akula410/builder
+go get github.com/akula410/builder/v2
 ```
 
 Import the package:
 
 ```go
-import sqlbuilder "github.com/akula410/builder"
+import sqlbuilder "github.com/akula410/builder/v2"
 ```
 
 ---
@@ -48,7 +48,7 @@ import (
     "time"
 
     _ "github.com/go-sql-driver/mysql"
-    sqlbuilder "github.com/akula410/builder"
+    sqlbuilder "github.com/akula410/builder/v2"
 )
 
 func main() {
