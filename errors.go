@@ -1,0 +1,30 @@
+package builder
+
+import "errors"
+
+var (
+	ErrEmptyTable        = errors.New("sqlbuilder: table name is empty")
+	ErrEmptyDatabase     = errors.New("sqlbuilder: database name is empty")
+	ErrEmptyColumn       = errors.New("sqlbuilder: column name is empty")
+	ErrEmptyColumnType   = errors.New("sqlbuilder: column type is empty")
+	ErrEmptyIndex        = errors.New("sqlbuilder: index name is empty")
+	ErrEmptyIndexColumns = errors.New("sqlbuilder: index must have at least one column")
+	ErrEmptyValues       = errors.New("sqlbuilder: no values provided")
+	ErrEmptyColumns      = errors.New("sqlbuilder: no columns provided")
+	ErrEmptyFrom         = errors.New("sqlbuilder: FROM clause is required")
+	ErrEmptySet          = errors.New("sqlbuilder: SET clause is required for UPDATE")
+	ErrNegativeLimit     = errors.New("sqlbuilder: LIMIT must be >= 0")
+	ErrNegativeOffset    = errors.New("sqlbuilder: OFFSET must be >= 0")
+	ErrEmptyIN           = errors.New("sqlbuilder: IN requires at least one value")
+	ErrInvalidIdent      = errors.New("sqlbuilder: invalid identifier")
+	ErrInvalidColumnType = errors.New("sqlbuilder: invalid or unsupported column type")
+	ErrInvalidCharset    = errors.New("sqlbuilder: invalid or unsupported CHARACTER SET")
+	ErrInvalidCollation  = errors.New("sqlbuilder: invalid or unsupported COLLATION")
+	ErrInvalidEngine     = errors.New("sqlbuilder: invalid or unsupported storage engine")
+	ErrMismatchedRows    = errors.New("sqlbuilder: all rows must have the same number of values as columns")
+	ErrBulkEmptyRows     = errors.New("sqlbuilder: no rows provided for bulk insert")
+	ErrEmptyRename       = errors.New("sqlbuilder: rename table requires at least one pair")
+	ErrEmptyConstraint   = errors.New("sqlbuilder: constraint name is empty")
+	ErrEmptyAlterOps     = errors.New("sqlbuilder: ALTER TABLE requires at least one operation")
+	ErrEmptyMigration    = errors.New("sqlbuilder: migration name is empty")
+)
